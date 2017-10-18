@@ -43,7 +43,7 @@ class BrightcoveVideo extends MediaTypeBase {
       'ends_at' => $this->t('Ends at'),
       'picture_thumbnail' => $this->t('Thumbnail picture'),
       'picture_poster' => $this->t('Picture poster'),
-      'video_source' => $this->t('Vidoe source'),
+      'video_source' => $this->t('Video source'),
       'economics' => $this->t('Economics'),
       'partner_channel' => $this->t('Partner channel'),
     ];
