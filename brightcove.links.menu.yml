@@ -49,3 +49,10 @@ entity.brightcove_subscription.collection:
   description: 'Manage Brightcove subscriptions.'
   route_name: entity.brightcove_subscription.collection
   parent: system.admin_config_system
+
+# Brightcove Cron
+brightcove_cron.settings:
+  title: 'Brightcove Cron'
+  description: 'Manage Brightcove cron settings.'
+  route_name: brightcove_cron.settings
+  parent: system.admin_config_system

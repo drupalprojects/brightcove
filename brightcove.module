@@ -147,6 +147,12 @@ function _brightcove_initiate_sync() {
  * Implements hook_cron().
  */
 function brightcove_cron() {
+  $config = \Drupal::config('brightcove.settings');
+
+  if ($config->get('disable_cron')) {
+    return;
+  }
+
   _brightcove_initiate_sync();
 }
 
