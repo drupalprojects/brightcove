@@ -7,6 +7,7 @@ use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Queue\QueueWorkerBase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\Core\Queue\RequeueException;
 
 /**
  * Processes Entity Update Tasks for Playlist.
@@ -72,6 +73,11 @@ class BrightcovePlaylistQueueWorker extends QueueWorkerBase implements Container
     /** @var \Brightcove\Object\Playlist $playlist */
     $playlist = $data['playlist'];
 
-    BrightcovePlaylist::createOrUpdate($playlist, $this->playlist_storage, $this->video_storage, $data['api_client_id']);
+    try {
+      BrightcovePlaylist::createOrUpdate($playlist, $this->playlist_storage, $this->video_storage, $data['api_client_id']);
+    }
+    catch (\Exception $e) {
+      throw new RequeueException($e->getMessage(), $e->getCode(), $e);
+    }
   }
 }
