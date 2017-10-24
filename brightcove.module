@@ -208,6 +208,8 @@ function brightcove_brightcove_video_view(array &$build, EntityInterface $entity
         '#player' => BrightcoveUtil::getDefaultPlayer($video_entity),
         '#height' => !empty($player) ? $player->getHeight() : NULL,
         '#width' => !empty($player) ? $player->getWidth() : NULL,
+        '#data_usage' => 'cms:drupal:' . \DRUPAL::VERSION . ':' . 
+          system_get_info('module', 'brightcove')['version'] . ':javascript',
       ];
     }
   }
@@ -264,6 +266,8 @@ function brightcove_brightcove_playlist_view(array &$build, EntityInterface $ent
         '#player' => BrightcoveUtil::getDefaultPlayer($playlist_entity),
         '#height' => !empty($player) ? $player->getHeight() : NULL,
         '#width' => !empty($player) ? $player->getWidth() : NULL,
+        '#data_usage' => 'cms:drupal:' . \DRUPAL::VERSION . ':' . 
+          system_get_info('module', 'brightcove')['version'] . ':javascript',
       ];
     }
   }
@@ -282,6 +286,7 @@ function brightcove_theme($existing, $type, $theme, $path) {
         'embed' => 'default',
         'height' => NULL,
         'width' => NULL,
+        'data_usage' => NULL,
       ],
     ],
     'brightcove_playlist_video_player' => [
@@ -292,6 +297,7 @@ function brightcove_theme($existing, $type, $theme, $path) {
         'embed' => 'default',
         'height' => NULL,
         'width' => NULL,
+        'data_usage' => NULL,
       ],
     ],
   ];
