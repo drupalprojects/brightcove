@@ -3,6 +3,7 @@
 namespace Drupal\brightcove\Form;
 
 use Drupal\brightcove\BrightcoveUtil;
+use Drupal\brightcove\Entity\BrightcoveSubscription;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Entity\EntityTypeManager;
 use Drupal\Core\Form\FormBase;
@@ -78,7 +79,7 @@ class StatusOverviewForm extends FormBase {
   public function buildForm(array $form, FormStateInterface $form_state) {
     $video_num = $this->entityTypeManager->getStorage('brightcove_video')->getQuery()->count()->execute();
     $playlist_num = $this->entityTypeManager->getStorage('brightcove_playlist')->getQuery()->count()->execute();
-    $subscription_num = $this->entityTypeManager->getStorage('brightcove_subscription')->getQuery()->count()->execute();
+    $subscription_num = BrightcoveSubscription::count();
 
     $counts = [
       'client' => $this->entityTypeManager->getStorage('brightcove_api_client')->getQuery()->count()->execute(),
