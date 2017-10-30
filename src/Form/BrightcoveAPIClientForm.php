@@ -298,14 +298,12 @@ class BrightcoveAPIClientForm extends EntityForm {
       }
 
       // Create new default subscription.
-      BrightcoveSubscription::create([
-        'id' => "default_{$this->entity->id()}",
-        'status' => FALSE,
-        'default' => TRUE,
-        'api_client_id' => $this->entity->id(),
-        'endpoint' => Url::fromRoute('brightcove_notification_callback', [], ['absolute' => TRUE])->toString(),
-        'events' => ['video-change'],
-      ])->save(FALSE);
+      $subscription = new BrightcoveSubscription(TRUE);
+      $subscription->setStatus(FALSE)
+        ->setApiClient($entity)
+        ->setEndpoint(Url::fromRoute('brightcove_notification_callback', [], ['absolute' => TRUE])->toString())
+        ->setEvents(['video-change'])
+        ->save();
 
       // Get Subscriptions the first time when the API client is being saved.
       $this->subscriptions_queue->createItem($this->entity->id());
