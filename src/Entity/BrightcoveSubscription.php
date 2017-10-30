@@ -279,7 +279,7 @@ class BrightcoveSubscription implements BrightcoveSubscriptionInterface {
    *     - key: the name of the field.
    *     - value: the order direction.
    *
-   * @return \Drupal\brightcove\Entity\BrightcoveSubscription[]|array
+   * @return \Drupal\brightcove\Entity\BrightcoveSubscription[]
    *   Returns loaded Brightcove Subscription entity objects keyed by ID or an
    *   empty array if there are none.
    */
@@ -297,6 +297,35 @@ class BrightcoveSubscription implements BrightcoveSubscriptionInterface {
     }
 
     $brightcove_subscriptions = $query->execute()
+      ->fetchAllAssoc('id', \PDO::FETCH_ASSOC);
+
+    $loaded_brightcove_subscriptions = [];
+    foreach ($brightcove_subscriptions as $id => $brightcove_subscription) {
+      $brightcove_subscription['events'] = unserialize($brightcove_subscription['events']);
+      $loaded_brightcove_subscriptions[$id] = BrightcoveSubscription::createFromArray($brightcove_subscription);
+    }
+    return $loaded_brightcove_subscriptions;
+  }
+
+  /**
+   * Load Subscriptions for a given api client.
+   *
+   * @param \Drupal\brightcove\Entity\BrightcoveAPIClient $api_client
+   *   Loaded API client.
+   *
+   * @return \Drupal\brightcove\Entity\BrightcoveSubscription[]
+   *   Returns loaded Brightcove Subscription entity objects keyed by ID or an
+   *   empty array if there are none.
+   */
+  public static function loadMultipleByApiClient(BrightcoveAPIClient $api_client) {
+    /** @var \Drupal\Core\Database\Connection $connection */
+    $connection = \Drupal::getContainer()
+      ->get('database');
+
+    $brightcove_subscriptions = $connection->select('brightcove_subscription', 'bs')
+      ->fields('bs')
+      ->condition('api_client_id', $api_client->id())
+      ->execute()
       ->fetchAllAssoc('id', \PDO::FETCH_ASSOC);
 
     $loaded_brightcove_subscriptions = [];
