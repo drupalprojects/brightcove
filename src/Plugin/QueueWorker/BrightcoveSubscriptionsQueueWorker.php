@@ -26,14 +26,14 @@ class BrightcoveSubscriptionsQueueWorker extends QueueWorkerBase implements Cont
    *
    * @var \Drupal\Core\Queue\QueueInterface
    */
-  protected $subscription_queue;
+  protected $subscriptionQueue;
 
   /**
    * The brightcove_delete_subscription queue.
    *
    * @var \Drupal\Core\Queue\QueueInterface
    */
-  protected $subscription_delete_queue;
+  protected $subscriptionDeleteQueue;
 
   /**
    * Constructs a new BrightcoveSubscriptionQueueWorker object.
@@ -49,10 +49,10 @@ class BrightcoveSubscriptionsQueueWorker extends QueueWorkerBase implements Cont
    * @param \Drupal\Core\Queue\QueueInterface $subscription_delete_queue
    *   The brightcove_delete_subscription queue.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, QueueInterface $subscription_queue, QueueInterface $subscription_delete_queue) {
+  public function __construct(array $configuration, $plugin_id, array $plugin_definition, QueueInterface $subscription_queue, QueueInterface $subscription_delete_queue) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->subscription_queue = $subscription_queue;
-    $this->subscription_delete_queue = $subscription_delete_queue;
+    $this->subscriptionQueue = $subscription_queue;
+    $this->subscriptionDeleteQueue = $subscription_delete_queue;
   }
 
   /**
@@ -78,7 +78,7 @@ class BrightcoveSubscriptionsQueueWorker extends QueueWorkerBase implements Cont
 
       foreach (!empty($subscriptions) ? $subscriptions : [] as $subscription) {
         if ($subscription instanceof Subscription) {
-          $this->subscription_queue->createItem([
+          $this->subscriptionQueue->createItem([
             'api_client_id' => $data,
             'subscription' => $subscription,
           ]);
@@ -94,4 +94,5 @@ class BrightcoveSubscriptionsQueueWorker extends QueueWorkerBase implements Cont
       }
     }
   }
+
 }
