@@ -76,12 +76,12 @@ interface BrightcoveSubscriptionInterface {
   /**
    * Sets the API Client ID.
    *
-   * @param \Drupal\brightcove\Entity\BrightcoveAPIClient $api_client
+   * @param \Drupal\brightcove\Entity\BrightcoveAPIClient|null $api_client
    *   The API Client.
    *
    * @return $this
    */
-  public function setApiClient(BrightcoveAPIClient $api_client);
+  public function setApiClient($api_client);
 
   /**
    * Sets the Brightcove Subscription ID.

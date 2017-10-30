@@ -132,7 +132,7 @@ class BrightcoveSubscription implements BrightcoveSubscriptionInterface {
   /**
    * {@inheritdoc}
    */
-  public function setApiClient(BrightcoveAPIClient $apiClient) {
+  public function setApiClient($apiClient) {
     $this->apiClient = $apiClient;
     return $this;
   }
