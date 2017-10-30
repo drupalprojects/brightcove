@@ -1,59 +1,53 @@
 <?php
+
 namespace Drupal\brightcove\Entity;
 
 use Brightcove\API\Request\SubscriptionRequest;
 use Brightcove\Object\Subscription;
-use Drupal\brightcove\BrightcoveSubscriptionInterface;
+use Drupal\brightcove\BrightcoveAPIClientInterface;
 use Drupal\brightcove\BrightcoveUtil;
-use Drupal\Core\Config\Entity\ConfigEntityBase;
-use Drupal\Core\Config\Entity\ConfigEntityInterface;
+use Drupal\brightcove\Entity\Exception\BrightcoveSubscriptionException;
 use Drupal\Core\Url;
 
 /**
  * Defines the Brightcove Subscription entity.
- *
- * @ingroup brightcove
- *
- * @ConfigEntityType(
- *   id = "brightcove_subscription",
- *   label = @Translation("Brightcove Subscription"),
- *   handlers = {
- *     "list_builder" = "Drupal\brightcove\BrightcoveSubscriptionListBuilder",
- *     "form" = {
- *       "add" = "Drupal\brightcove\Form\BrightcoveSubscriptionForm",
- *       "delete" = "Drupal\brightcove\Form\BrightcoveSubscriptionDeleteForm"
- *     },
- *   },
- *   config_prefix = "brightcove_subscription",
- *   admin_permission = "administer brightcove configuration",
- *   entity_keys = {
- *     "id" = "id",
- *     "uuid" = "uuid"
- *   },
- *   links = {
- *     "canonical" = "/admin/config/system/brightcove_subscription/{brightcove_subscription}",
- *     "add-form" = "/admin/config/system/brightcove_subscription/add",
- *     "delete-form" = "/admin/config/system/brightcove_subscription/{brightcove_subscription}/delete",
- *     "collection" = "/admin/config/system/brightcove_subscription",
- *     "enable": "/admin/config/system/brightcove_subscription/{brightcove_subscription}/enable",
- *     "disable": "/admin/config/system/brightcove_subscription/{brightcove_subscription}/disable",
- *   }
- * )
  */
-class BrightcoveSubscription extends ConfigEntityBase implements BrightcoveSubscriptionInterface {
+class BrightcoveSubscription implements BrightcoveSubscriptionInterface {
+
+  /**
+   * Internal BrightcoveSubscription ID of the entity.
+   *
+   * @var int
+   */
+  protected $id;
+
+  /**
+   * Brightcove Subscription ID of the entity.
+   *
+   * @var int
+   */
+  protected $bcsid;
+
+  /**
+   * Status of the Subscription.
+   *
+   * @var bool
+   */
+  protected $status = TRUE;
+
   /**
    * Indicates default subscription for the client.
    *
    * @var bool
    */
-  protected $default;
+  protected $default = FALSE;
 
   /**
-   * The Brightcove API Client ID.
+   * The Brightcove API Client.
    *
-   * @var string
+   * @var \Drupal\brightcove\Entity\BrightcoveAPIClient
    */
-  protected $api_client_id;
+  protected $apiClient;
 
   /**
    * The notifications endpoint.
@@ -65,16 +59,16 @@ class BrightcoveSubscription extends ConfigEntityBase implements BrightcoveSubsc
   /**
    * Array of events subscribed to.
    *
-   * @var array[string]
+   * @var string[]
    */
   protected $events;
 
   /**
-   * {@inheritdoc}
+   * Drupal database description.
+   *
+   * @var \Drupal\core\Database\Connection
    */
-  public function __construct(array $values) {
-    parent::__construct($values, 'brightcove_subscription');
-  }
+  protected $connection;
 
   /**
    * {@inheritdoc}
@@ -94,10 +88,24 @@ class BrightcoveSubscription extends ConfigEntityBase implements BrightcoveSubsc
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
-  public function getAPIClient() {
-    return !empty($this->api_client_id) ? BrightcoveAPIClient::load($this->api_client_id) : NULL;
+  public function isNew() {
+    return empty($this->id);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getApiClient() {
+    return !empty($this->apiClient) ? $this->apiClient : NULL;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getBcSid() {
+    return $this->bcsid;
   }
 
   /**
@@ -115,10 +123,25 @@ class BrightcoveSubscription extends ConfigEntityBase implements BrightcoveSubsc
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
-  public function setAPIClient(BrightcoveAPIClient $api_client) {
-    $this->api_client_id = $api_client->id();
+  public function getId() {
+    return $this->id;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setApiClient(BrightcoveAPIClient $apiClient) {
+    $this->apiClient = $apiClient;
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setBcSid($bcsid) {
+    $this->bcsid = $bcsid;
     return $this;
   }
 
@@ -127,7 +150,7 @@ class BrightcoveSubscription extends ConfigEntityBase implements BrightcoveSubsc
    */
   public function setEndpoint($endpoint) {
     $this->endpoint = $endpoint;
-    return $this->endpoint;
+    return $this;
   }
 
   /**
@@ -135,7 +158,7 @@ class BrightcoveSubscription extends ConfigEntityBase implements BrightcoveSubsc
    */
   public function setEvents(array $events) {
     $this->events = $events;
-    return $this->events;
+    return $this;
   }
 
   /**
@@ -150,51 +173,213 @@ class BrightcoveSubscription extends ConfigEntityBase implements BrightcoveSubsc
   }
 
   /**
+   * BrightcoveSubscription constructor.
+   *
+   * @param bool $is_default
+   *   Whether this subscription should be default or not. There is be only one
+   *   per API client.
+   */
+  public function __construct($is_default = FALSE) {
+    $this->id = NULL;
+    $this->default = $is_default;
+    $this->connection = \Drupal::getContainer()->get('database');
+  }
+
+  /**
+   * Loads the entity by a given field and value.
+   *
+   * @param string $field
+   *   The name of the field.
+   * @param string|int $value
+   *   The value which against the condition needs to be checked for the field.
+   *
+   * @return \Drupal\brightcove\Entity\BrightcoveSubscription|null
+   *   The default Brightcove Subscription for the given api client or NULL if
+   *   not found.
+   *
+   * @throws \Drupal\brightcove\Entity\Exception\BrightcoveSubscriptionException
+   *   If the field is not valid.
+   */
+  protected static function loadByField($field, $value) {
+    /** @var \Drupal\Core\Database\Connection $connection */
+    $connection = \Drupal::getContainer()
+      ->get('database');
+
+    $query = $connection->select('brightcove_subscription', 'bs')
+      ->fields('bs');
+
+    switch ($field) {
+      case 'bcsid':
+        $query->condition('bs.bcsid', $value);
+        break;
+
+      case 'default':
+        $query->condition('bs.api_client_id', $value)
+          ->condition('bs.default', 1);
+        break;
+
+      case 'endpoint':
+        $query->condition('bs.endpoint', $value);
+        break;
+
+      case 'id':
+        $query->condition('bs.id', $value);
+        break;
+
+      default:
+        throw new BrightcoveSubscriptionException('Invalid field type.');
+    }
+
+    $result = $query->execute()
+      ->fetchAssoc();
+
+    if (empty($result)) {
+      $result = array();
+    }
+    else {
+      // Unserialize events.
+      $result['events'] = unserialize($result['events']);
+    }
+
+    return self::createFromArray($result);
+  }
+
+  /**
    * Loads the default subscription by API Client ID.
    *
-   * @param $api_client_id
+   * @param int $api_client_id
    *   API Client ID.
+   *
    * @return \Drupal\brightcove\Entity\BrightcoveSubscription|null
    *   The default Brightcove Subscription for the given api client or NULL if
    *   not found.
    */
   public static function loadDefault($api_client_id) {
-    $entity_ids = \Drupal::entityQuery('brightcove_subscription')
-      ->condition('api_client_id', $api_client_id)
-      ->execute();
+    return self::loadByField('default', $api_client_id);
+  }
 
+  /**
+   * Loads the entity by it's internal Drupal ID.
+   *
+   * @param int $id
+   *   The internal Drupal ID of the entity.
+   *
+   * @return \Drupal\brightcove\Entity\BrightcoveSubscription|null
+   *   Loaded BrightcoveSubscription entity, or NULL if not found.
+   */
+  public static function load($id) {
+    return self::loadByField('id', $id);
+  }
 
-    /** @var static $subscriptions */
-    $subscriptions = self::loadMultiple($entity_ids);
-    foreach (!empty($subscriptions) ? $subscriptions : [] as $subscription) {
-      if ($subscription->isDefault()) {
-        return $subscription;
-      }
+  /**
+   * Loads multiple BrightcoveSubscription entities.
+   *
+   * @param string[] $order_by
+   *   Fields to order by:
+   *     - key: the name of the field.
+   *     - value: the order direction.
+   *
+   * @return \Drupal\brightcove\Entity\BrightcoveSubscription[]|array
+   *   Returns loaded Brightcove Subscription entity objects keyed by ID or an
+   *   empty array if there are none.
+   */
+  public static function loadMultiple(array $order_by = ['is_default' => 'DESC', 'endpoint' => 'ASC']) {
+    /** @var \Drupal\Core\Database\Connection $connection */
+    $connection = \Drupal::getContainer()
+      ->get('database');
+
+    $query = $connection->select('brightcove_subscription', 'bs')
+      ->fields('bs');
+
+    // Set orders.
+    foreach ($order_by as $field => $direction) {
+      $query->orderBy($field, $direction);
     }
 
-    return NULL;
+    $brightcove_subscriptions = $query->execute()
+      ->fetchAllAssoc('id', \PDO::FETCH_ASSOC);
+
+    $loaded_brightcove_subscriptions = [];
+    foreach ($brightcove_subscriptions as $id => $brightcove_subscription) {
+      $brightcove_subscription['events'] = unserialize($brightcove_subscription['events']);
+      $loaded_brightcove_subscriptions[$id] = BrightcoveSubscription::createFromArray($brightcove_subscription);
+    }
+    return $loaded_brightcove_subscriptions;
+  }
+
+  /**
+   * Loads entity by it's Brightcove Subscription ID.
+   *
+   * @param string $bcsid
+   *   Brightcove ID of the subscription.
+   *
+   * @return \Drupal\brightcove\Entity\BrightcoveSubscription|null
+   *   Loaded BrightcoveSubscription entity, or NULL if not found.
+   */
+  public static function loadByBcSid($bcsid) {
+    return self::loadByField('bcsid', $bcsid);
   }
 
   /**
    * Load a Subscription by its endpoint.
    *
-   * @param $endpoint
-   *   The endpoint string.
+   * @param string $endpoint
+   *   The endpoint.
    *
    * @return \Drupal\brightcove\Entity\BrightcoveSubscription|null
    *   The Subscription with the given endpoint or NULL if not found.
-   *
    */
   public static function loadByEndpoint($endpoint) {
-    $entity_ids = \Drupal::entityQuery('brightcove_subscription')
-      ->condition('endpoint', $endpoint)
-      ->execute();
+    return self::loadByField('endpoint', $endpoint);
+  }
 
-    if (!empty($entity_ids)) {
-      $entity_id = reset($entity_ids);
-      return self::load($entity_id);
+  /**
+   * Creates a BrightcoveSubscription entity from an array.
+   *
+   * @param array $data
+   *   Array that contains information about the entity.
+   *   Values:
+   *     - id (int): Internal Drupal identifier, it will be ignored when saving
+   *                 the entity.
+   *     - bcsid (string): Brightcove Subscription entity identifier.
+   *     - api_client_id (string): API Client ID.
+   *     - endpoint (string): Endpoint callback URL.
+   *     - events (string[]): Events list, eg.: video-change.
+   *     - is_default (bool): Whether the current Brightcove Subscription is
+   *                          default or not. Will be ignored for local entity
+   *                          update.
+   *     - status (bool): Indicates whether a subscription is enabled or
+   *                      disabled. An existing non-default subscription is
+   *                      always enabled, only default subscriptions can be set
+   *                      to disabled.
+   *
+   * @return \Drupal\brightcove\Entity\BrightcoveSubscription|null
+   *   The initialized BrightcoveSubscription entity object, or null if the
+   *   $data array is empty.
+   */
+  public static function createFromArray(array $data) {
+    if (!empty($data) && !empty($data['api_client_id'])) {
+      $api_client = BrightcoveAPIClient::load($data['api_client_id']);
+      $brightcove_subscription = (new BrightcoveSubscription())
+        ->setApiClient($api_client)
+        ->setEndpoint($data['endpoint'])
+        ->setEvents($data['events']);
+
+      if (isset($data['id'])) {
+        $brightcove_subscription->id = (int) $data['id'];
+      }
+      if (isset($data['bcsid'])) {
+        $brightcove_subscription->bcsid = $data['bcsid'];
+      }
+      if (isset($data['is_default'])) {
+        $brightcove_subscription->default = (bool) $data['is_default'];
+      }
+      if (isset($data['status'])) {
+        $brightcove_subscription->status = $data['status'];
+      }
+
+      return $brightcove_subscription;
     }
-
     return NULL;
   }
 
@@ -202,57 +387,95 @@ class BrightcoveSubscription extends ConfigEntityBase implements BrightcoveSubsc
    * {@inheritdoc}
    *
    * @param bool $upload
-   *   Whether to create the new subscription on Brightcove or not.
+   *   Whether to upload the new subscription on Brightcove or not.
    */
-  public function save($upload = TRUE) {
-    // Create subscription on Brightcove only if the entity is new, as for now
-    // it is not possible to edit existing subscriptions.
-    if ($this->isNew() && $upload) {
-      $this->saveToBrightcove();
-    }
+  public function save($upload = FALSE) {
+    // Fields to insert or update.
+    $fields = [
+      'api_client_id' => $this->getApiClient()->id(),
+      'endpoint' => $this->getEndpoint(),
+      'events' => serialize($this->getEvents()),
+    ];
+    $fields += ['bcsid' => !empty($this->bcsid) ? $this->getBcSid() : NULL];
+    $fields += ['status' => $this->isDefault() ? (int) $this->isActive() : 1];
 
-    return parent::save();
+    // Save new entity.
+    if ($this->isNew()) {
+      // Check whether we already have a default subscription for the API client
+      // and throw an exception if one already exist.
+      if ($this->isDefault()) {
+        $query = $this->connection->select('brightcove_subscription', 'bs')
+          ->fields('bs', ['id']);
+        $query->condition('is_default', TRUE)
+          ->condition('api_client_id', $this->apiClient->id());
+        $query->countQuery();
+        $count = $query->execute()
+          ->fetchField();
+        if ($count > 0) {
+          throw new BrightcoveSubscriptionException(strtr('Default subscription already exist for the :api_client API Client.', [
+            ':api_client' => $this->apiClient->getLabel(),
+          ]));
+        }
+      }
+
+      // Create subscription on Brightcove only if the entity is new, as for now
+      // it is not possible to update existing subscriptions.
+      if ($upload) {
+        $this->saveToBrightcove();
+      }
+
+      // Insert Brightcove Subscription into the database.
+      $this->connection->insert('brightcove_subscription')
+        ->fields($fields + ['is_default' => (int) $this->isDefault()])
+        ->execute();
+    }
+    // Allow local changes to be saved.
+    elseif (!$upload) {
+      $this->connection->update('brightcove_subscription')
+        ->fields($fields)
+        ->condition('id', $this->getId())
+        ->execute();
+    }
+    else {
+      throw new BrightcoveSubscriptionException('An already existing subscription cannot be updated!');
+    }
   }
 
   /**
    * Saves the subscription entity to Brightcove.
+   *
+   * @throws \Drupal\brightcove\Entity\Exception\BrightcoveSubscriptionException
+   *   If the Subscription wasn't saved to Brightcove successfully.
    */
   public function saveToBrightcove() {
     try {
       // Get CMS API.
-      $cms = BrightcoveUtil::getCMSAPI($this->api_client_id);
+      $cms = BrightcoveUtil::getCMSAPI($this->apiClient->id());
+
+      if ($is_default = $this->isDefault()) {
+        // Make sure that when the default is enabled, always use the correct
+        // URL.
+        $default_endpoint = Url::fromRoute('brightcove_notification_callback', [], ['absolute' => TRUE])->toString();
+        if ($this->endpoint != $default_endpoint) {
+          $this->setEndpoint($default_endpoint);
+        }
+      }
 
       // Create subscription.
       $subscription = new SubscriptionRequest();
       $subscription->setEndpoint($this->getEndpoint());
       $subscription->setEvents($this->getEvents());
       $new_subscription = $cms->createSubscription($subscription);
-      $this->set('id', $new_subscription->getId());
+      $this->setBcSid($new_subscription->getId());
+
+      if ($is_default) {
+        $this->setStatus(TRUE);
+        $this->save();
+      }
     }
     catch (\Exception $e) {
-      watchdog_exception('brightcove', $e, 'Failed to save Subscription with @endpoint endpoint (ID: @id).', [
-        '@endpoint' => $this->getEndpoint(),
-        '@id' => $this->id(),
-      ]);
-      throw $e;
-    }
-  }
-
-  /**
-   * Saves the default subscription entity to Brightcove.
-   */
-  public function saveDefaultToBrightcove() {
-    if ($this->isDefault()) {
-      // Make sure that when the default is enabled, always use the correct URL.
-      $default_endpoint = Url::fromRoute('brightcove_notification_callback', [], ['absolute' => TRUE])->toString();
-      if ($this->endpoint != $default_endpoint) {
-        $this->setEndpoint($default_endpoint);
-      }
-
-      $this->saveToBrightcove();
-
-      $this->set('status', 1);
-      $this->save(FALSE);
+      watchdog_exception('brightcove', $e, $e->getMessage());
+      throw new BrightcoveSubscriptionException($e->getMessage(), $e->getCode(), $e);
     }
   }
 
@@ -263,11 +486,14 @@ class BrightcoveSubscription extends ConfigEntityBase implements BrightcoveSubsc
    *   If TRUE delete the local Subscription entity only, otherwise delete the
    *   subscription from Brightcove as well.
    */
-  public function delete($local_only = FALSE) {
+  public function delete($local_only = TRUE) {
+    $this->connection->delete('brightcove_subscription')
+      ->condition('id', $this->id)
+      ->execute();
+
     if (!$local_only) {
       $this->deleteFromBrightcove();
     }
-    parent::delete();
   }
 
   /**
@@ -275,129 +501,135 @@ class BrightcoveSubscription extends ConfigEntityBase implements BrightcoveSubsc
    */
   public function deleteFromBrightcove() {
     try {
-      $cms = BrightcoveUtil::getCMSAPI($this->api_client_id);
-      $cms->deleteSubscription($this->id());
+      $cms = BrightcoveUtil::getCMSAPI($this->apiClient->id());
+      $cms->deleteSubscription($this->getBcSid());
     }
     catch (\Exception $e) {
-      watchdog_exception('brightcove', $e, 'Failed to delete Subscription with @endpoint endpoint (ID: @id).', [
-        '@endpoint' => $this->getEndpoint(),
-        '@id' => $this->id(),
-      ]);
-      throw $e;
-    }
-  }
+      // In case of the subscription cannot be found on Brightcove, just ignore,
+      // otherwise throw an exception.
+      if ($e->getCode() != 404) {
+        $message = 'Failed to delete Subscription with @endpoint endpoint (ID: @bcsid).';
+        $replacement = [
+          '@endpoint' => $this->getEndpoint(),
+          '@bcsid' => $this->getBcSid(),
+        ];
 
-  /**
-   * Deletes the default Subscription from Brightcove.
-   */
-  public function deleteDefaultFromBrightcove() {
-    // This would make sense only in case of the default subscription, if it's
-    // not a default one, do nothing.
+        watchdog_exception('brightcove', $e, $message, $replacement);
+        throw new BrightcoveSubscriptionException(strtr($message, $replacement), $e->getCode(), $e);
+      }
+    }
+
+    // In case of a default subscription set status to disabled and unset the
+    // Brightcove ID.
     if ($this->isDefault()) {
-      $this->deleteFromBrightcove();
-      $this->set('id', "default_{$this->api_client_id}");
-      $this->set('status', 0);
-      $this->save(FALSE);
+      $this->setBcSid(NULL);
+      $this->setStatus(FALSE);
+      $this->save();
     }
   }
 
   /**
    * Create or update a Subscription entity.
    *
-   * @param \Brightcove\Object\Subscription $brightcove_subscription
+   * @param \Brightcove\Object\Subscription $subscription
    *   Subscription object from Brightcove.
    * @param \Drupal\brightcove\Entity\BrightcoveAPIClient|null $api_client
    *   Loaded API client entity, or null.
    */
-  public static function createOrUpdate(Subscription $brightcove_subscription, BrightcoveAPIClient $api_client = NULL) {
-    /** @var \Drupal\brightcove\Entity\BrightcoveSubscription $subscription */
-    $subscription = self::loadByEndpoint($brightcove_subscription->getEndpoint());
+  public static function createOrUpdate(Subscription $subscription, BrightcoveAPIClient $api_client = NULL) {
+    /** @var \Drupal\brightcove\Entity\BrightcoveSubscription $brightcove_subscription */
+    $brightcove_subscription = self::loadByEndpoint($subscription->getEndpoint());
 
     // If there is no Subscription by the endpoint, try to get one by its ID.
-    if (empty($subscription)) {
+    if (empty($brightcove_subscription)) {
       /** @var \Drupal\brightcove\Entity\BrightcoveSubscription $subscription */
-      $subscription = self::load($brightcove_subscription->getId());
+      $brightcove_subscription = self::loadByBcSid($subscription->getId());
     }
 
-    // Update existing subscription.
-    if (!empty($subscription)) {
-      self::saveSubscription($subscription, $brightcove_subscription);
-    }
-    // Otherwise create new subscription.
-    else {
-      $subscription = self::create([
-        'id' => $brightcove_subscription->getId(),
-      ]);
+    // Create new subscription if needed.
+    if (empty($brightcove_subscription)) {
+      $brightcove_subscription = new BrightcoveSubscription();
+      $brightcove_subscription->bcsid = $subscription->getId();
 
       /** @var \Drupal\brightcove\Entity\BrightcoveAPIClient $api_client */
       if (!empty($api_client)) {
-        $subscription->setAPIClient($api_client);
-        self::saveSubscription($subscription, $brightcove_subscription);
+        $brightcove_subscription->setApiClient($api_client);
+      }
+      else {
+        return;
       }
     }
-  }
 
-  /**
-   * Save subscription.
-   *
-   * @param \Drupal\brightcove\Entity\BrightcoveSubscription $subscription
-   *   The loaded or pre-created Subscription entity.
-   * @param \Brightcove\Object\Subscription $brightcove_subscription
-   *   The Subscription from Brightcove.
-   */
-  protected static function saveSubscription(BrightcoveSubscription $subscription, Subscription $brightcove_subscription) {
     $needs_save = FALSE;
 
-    // Update default Subscription's ID.
-    if ($subscription->isDefault() && ($id = $brightcove_subscription->getId()) != $subscription->id()) {
-      $subscription->set('id', $id);
-      $subscription->setStatus(TRUE);
+    // Update ID.
+    if (($bcsid = $subscription->getId()) != $brightcove_subscription->getBcSid()) {
+      $brightcove_subscription->setBcSid($bcsid);
+      $needs_save = TRUE;
+    }
+
+    // In case of an inactive default subscription set status to TRUE.
+    if ($brightcove_subscription->isDefault() && !$brightcove_subscription->isActive()) {
+      $brightcove_subscription->setStatus(TRUE);
       $needs_save = TRUE;
     }
 
     // Update endpoint.
-    if (($endpoint = $brightcove_subscription->getEndpoint()) != $subscription->getEndpoint()) {
-      $subscription->setEndpoint($endpoint);
+    if (($endpoint = $subscription->getEndpoint()) != $brightcove_subscription->getEndpoint()) {
+      $brightcove_subscription->setEndpoint($endpoint);
       $needs_save = TRUE;
     }
 
     // Update events.
-    $events = $brightcove_subscription->getEvents();
+    $events = $subscription->getEvents();
     if (!is_array($events)) {
       $events = [$events];
     }
-    if ($events != $subscription->getEvents()) {
-      $subscription->setEvents($events);
+    if ($events != $brightcove_subscription->getEvents()) {
+      $brightcove_subscription->setEvents($events);
       $needs_save = TRUE;
     }
 
     // Save the Subscription if needed.
     if ($needs_save) {
-      $subscription->save(FALSE);
+      $brightcove_subscription->save(FALSE);
     }
   }
 
   /**
-   * {@inheritdoc}
+   * Counts local subscriptions.
+   *
+   * @return int|null
+   *   Number of the available local subscriptions entities.
    */
-  public static function sort(ConfigEntityInterface $a, ConfigEntityInterface $b) {
-    // Sort endpoints by their endpoints.
-    if ($a instanceof BrightcoveSubscriptionInterface && $b instanceof BrightcoveSubscriptionInterface) {
-      // The default Subscription is always the first.
-      if ($a->isDefault()) {
-        return -1;
-      }
-      elseif ($b->isDefault()) {
-        return 1;
-      }
+  public static function count() {
+    /** @var \Drupal\Core\Database\Connection $connection */
+    $connection = \Drupal::getContainer()
+      ->get('database');
 
-      $a_endpoint = $a->getEndpoint();
-      $b_endpoint = $b->getEndpoint();
-      return strnatcasecmp($a_endpoint, $b_endpoint);
-    }
-
-    // Use parent sort if it's not a BrightcoveSubscription, but it should never
-    // happen.
-    return parent::sort($a, $b);
+    return $connection->select('brightcove_subscription', 'bs')
+      ->fields('bs')
+      ->countQuery()
+      ->execute()
+      ->fetchField();
   }
+
+  /**
+   * Get all available subscriptions from Brightcove.
+   *
+   * @param \Drupal\brightcove\BrightcoveAPIClientInterface $api_client
+   *   API Client entity.
+   *
+   * @return \Brightcove\Object\Subscription[]
+   *   List of subscriptions or null of there are none.
+   */
+  public static function listFromBrightcove(BrightcoveAPIClientInterface $api_client) {
+    $subscriptions = &drupal_static(__FUNCTION__);
+    if (is_null($subscriptions)) {
+      $cms = BrightcoveUtil::getCMSAPI($api_client->id());
+      $subscriptions = $cms->getSubscriptions();
+    }
+    return $subscriptions;
+  }
+
 }
