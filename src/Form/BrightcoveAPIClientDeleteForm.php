@@ -197,22 +197,23 @@ class BrightcoveAPIClientDeleteForm extends EntityConfirmFormBase {
       $this->custom_field_delete_queue->createItem($custom_field);
     }
 
-    // Delete the default subscription first from Brightcove if active.
-    $default_subscription = BrightcoveSubscription::loadDefault($entity->id());
-    if ($default_subscription->isActive()) {
-      $default_subscription->delete();
-    }
-    else {
-      $default_subscription->delete(TRUE);
+    // First delete the default subscription from Brightcove if it's active.
+    $default_subscription = BrightcoveSubscription::loadDefault($entity);
+    if (!empty($default_subscription)) {
+      if ($default_subscription->isActive()) {
+        $default_subscription->delete();
+      }
+      else {
+        $default_subscription->delete(TRUE);
+      }
     }
 
-    // Collect all subscriptions belonging for the api client.
-    $subscriptions = $this->query_factory->get('brightcove_subscription')
-      ->condition('api_client_id', $entity->id())
-      ->execute();
-    foreach ($subscriptions as $subscription) {
+    // Then collect all available subscriptions belonging to the given api
+    // client, and put them into the delete queue.
+    $brightcove_subscriptions = BrightcoveSubscription::loadMultipleByApiClient($entity);
+    foreach ($brightcove_subscriptions as $brightcove_subscription) {
       $this->subscription_delete_queue->createItem([
-        'subscription_id' => $subscription,
+        'subscription_id' => $brightcove_subscription->getBcSid(),
         'local_only' => TRUE,
       ]);
     }
