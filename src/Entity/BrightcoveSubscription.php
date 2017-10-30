@@ -215,7 +215,7 @@ class BrightcoveSubscription implements BrightcoveSubscriptionInterface {
 
       case 'default':
         $query->condition('bs.api_client_id', $value)
-          ->condition('bs.default', 1);
+          ->condition('bs.is_default', 1);
         break;
 
       case 'endpoint':
