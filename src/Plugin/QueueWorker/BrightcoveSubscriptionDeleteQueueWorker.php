@@ -5,11 +5,8 @@ namespace Drupal\brightcove\Plugin\QueueWorker;
 use Brightcove\API\Exception\APIException;
 use Drupal\brightcove\BrightcoveUtil;
 use Drupal\brightcove\Entity\BrightcoveSubscription;
-use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Logger\RfcLogLevel;
-use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Queue\QueueWorkerBase;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Processes Entity Sync Tasks for Subscription.
@@ -20,42 +17,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   cron = { "time" = 30 }
  * )
  */
-class BrightcoveSubscriptionDeleteQueueWorker extends QueueWorkerBase implements ContainerFactoryPluginInterface {
-  /**
-   * The brightcove_subscription storage.
-   *
-   * @var \Drupal\Core\Entity\EntityStorageInterface
-   */
-  protected $subscription_storage;
-
-  /**
-   * Constructs a new BrightcoveSubscriptionQueueWorker object.
-   *
-   * @param array $configuration
-   *   A configuration array containing information about the plugin instance.
-   * @param string $plugin_id
-   *   The plugin_id for the plugin instance.
-   * @param array $plugin_definition
-   *   The plugin implementation definition.
-   * @param \Drupal\Core\Entity\EntityStorageInterface $subscription_storage
-   *   The brightcove_subscription storage.
-   */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityStorageInterface $subscription_storage) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->subscription_storage = $subscription_storage;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
-    return new static(
-      $configuration,
-      $plugin_id,
-      $plugin_definition,
-      $container->get('entity_type.manager')->getStorage('brightcove_subscription')
-    );
-  }
+class BrightcoveSubscriptionDeleteQueueWorker extends QueueWorkerBase {
 
   /**
    * {@inheritdoc}
@@ -63,10 +25,9 @@ class BrightcoveSubscriptionDeleteQueueWorker extends QueueWorkerBase implements
   public function processItem($data) {
     /** @var array $data */
     if (!empty($data['local_only'])) {
-      /** @var \Drupal\brightcove\Entity\BrightcoveSubscription $subscription */
-      $subscription = BrightcoveSubscription::load($data['subscription_id']);
-      if (!empty($subscription)) {
-        $subscription->delete(TRUE);
+      $brightcove_subscription = BrightcoveSubscription::loadByBcSid($data['subscription_id']);
+      if (!empty($brightcove_subscription)) {
+        $brightcove_subscription->delete(TRUE);
       }
     }
     else {
@@ -80,24 +41,30 @@ class BrightcoveSubscriptionDeleteQueueWorker extends QueueWorkerBase implements
         // subscription.
         if ($e->getCode() == 404) {
           /** @var \Drupal\brightcove\Entity\BrightcoveSubscription $subscription */
-          $subscription = $this->subscription_storage->load($data['subscription_id']);
-          if ($subscription->isDefault()) {
-            $subscription->set('status', 0);
-            $subscription->set('id', "default_{$data['api_client_id']}");
-            $subscription->save(FALSE);
-          }
-          else {
-            $subscription->delete(TRUE);
+          $brightcove_subscription = BrightcoveSubscription::loadByBcSid($data['subscription_id']);
+
+          if (!empty($brightcove_subscription)) {
+            // In case of a default API client default, just unset the
+            // association.
+            if ($brightcove_subscription->isDefault()) {
+              $brightcove_subscription->setBcSid(NULL);
+              $brightcove_subscription->setStatus(FALSE);
+              $brightcove_subscription->save();
+            }
+            else {
+              $brightcove_subscription->delete(TRUE);
+            }
           }
         }
         elseif ($e->getCode() == 401) {
           watchdog_exception('brightcove', $e, 'Access denied for Notification.', [], RfcLogLevel::WARNING);
         }
-        // Otherwise throw again the same exception.
+        // Otherwise throw the same exception again.
         else {
           throw $e;
         }
       }
     }
   }
+
 }
