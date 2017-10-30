@@ -18,12 +18,13 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * )
  */
 class BrightcoveSubscriptionQueueWorker extends QueueWorkerBase implements ContainerFactoryPluginInterface {
+
   /**
    * The brightcove_subscription storage.
    *
    * @var \Drupal\Core\Entity\EntityStorageInterface
    */
-  protected $api_client_storage;
+  protected $apiClientStorage;
 
   /**
    * Constructs a new BrightcoveSubscriptionQueueWorker object.
@@ -37,9 +38,9 @@ class BrightcoveSubscriptionQueueWorker extends QueueWorkerBase implements Conta
    * @param \Drupal\Core\Entity\EntityStorageInterface $api_client_storage
    *   The brightcove_api_client storage.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityStorageInterface $api_client_storage) {
+  public function __construct(array $configuration, $plugin_id, array $plugin_definition, EntityStorageInterface $api_client_storage) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->api_client_storage = $api_client_storage;
+    $this->apiClientStorage = $api_client_storage;
   }
 
   /**
@@ -58,6 +59,7 @@ class BrightcoveSubscriptionQueueWorker extends QueueWorkerBase implements Conta
    * {@inheritdoc}
    */
   public function processItem($data) {
-    BrightcoveSubscription::createOrUpdate($data['subscription'], $this->api_client_storage->load($data['api_client_id']));
+    BrightcoveSubscription::createOrUpdate($data['subscription'], $this->apiClientStorage->load($data['api_client_id']));
   }
+
 }
