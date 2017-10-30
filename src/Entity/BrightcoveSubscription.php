@@ -247,15 +247,15 @@ class BrightcoveSubscription implements BrightcoveSubscriptionInterface {
   /**
    * Loads the default subscription by API Client ID.
    *
-   * @param int $api_client_id
-   *   API Client ID.
+   * @param \Drupal\brightcove\Entity\BrightcoveAPIClient $api_client
+   *   Loaded API Client entity.
    *
    * @return \Drupal\brightcove\Entity\BrightcoveSubscription|null
    *   The default Brightcove Subscription for the given api client or NULL if
    *   not found.
    */
-  public static function loadDefault($api_client_id) {
-    return self::loadByField('default', $api_client_id);
+  public static function loadDefault(BrightcoveAPIClient $api_client) {
+    return self::loadByField('default', $api_client->id());
   }
 
   /**
