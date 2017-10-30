@@ -1,5 +1,7 @@
 status: true
 dependencies: {  }
+_core:
+  default_config_hash: '-HnhnCw8-Qr7qiFrCGgbnDjju9QUWYjO3RO5k-e7Pnk'
 name: brightcove_videos_list_thumbnail
 label: 'Brightcove Videos list thumbnail'
 effects:
