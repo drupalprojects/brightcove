@@ -385,3 +385,44 @@ function brightcove_update_8108(&$sandbox) {
       ],
     ]);
 }
+
+/**
+ * Migrate config entity subscriptions.
+ */
+function brightcove_update_8109(&$sandbox) {
+  $container = \Drupal::getContainer();
+
+  /** @var \Drupal\Core\Database\Connection $connection */
+  $connection = $container->get('database');
+
+  // Get existing brightcove subsctiption entities. At this point the config
+  // entity does not exist, so it must be acquired through the database.
+  $results = $connection->select('config', 'c')
+    ->fields('c')
+    ->condition('name', 'brightcove.brightcove_subscription.%', 'LIKE')
+    ->execute();
+
+  // Create new subscription entities.
+  foreach ($results as $result) {
+    // Get data and map to the new fields.
+    $data = unserialize($result->data);
+    $data['bcsid'] = $data['id'];
+    unset($data['id']);
+    $data['is_default'] = $data['default'];
+    unset($data['default']);
+
+    // Save new subscription entity.
+    $brightcove_subscription = BrightcoveSubscription::createFromArray($data);
+    $brightcove_subscription->save();
+  }
+
+  // Remove old subscription config entities.
+  $connection->delete('config')
+    ->condition('name', 'brightcove.brightcove\_subscription.%', 'LIKE')
+    ->execute();
+
+  // Clear cached definitions.
+  /** @var \Drupal\Core\Config\TypedConfigManager $typed_config_manager */
+  $typed_config_manager = $container->get('config.typed');
+  $typed_config_manager->clearCachedDefinitions();
+}
