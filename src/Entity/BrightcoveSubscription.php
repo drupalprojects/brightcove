@@ -430,21 +430,22 @@ class BrightcoveSubscription implements BrightcoveSubscriptionInterface {
 
     // Save new entity.
     if ($this->isNew()) {
+      // Try to get a default subscription.
+      $default_subscription = self::loadDefault($this->apiClient);
+      $default_endpoint = Url::fromRoute('brightcove_notification_callback', [], ['absolute' => TRUE])->toString();
+
       // Check whether we already have a default subscription for the API client
       // and throw an exception if one already exist.
-      if ($this->isDefault()) {
-        $query = $this->connection->select('brightcove_subscription', 'bs')
-          ->fields('bs', ['id']);
-        $query->condition('is_default', TRUE)
-          ->condition('api_client_id', $this->apiClient->id());
-        $query->countQuery();
-        $count = $query->execute()
-          ->fetchField();
-        if ($count > 0) {
-          throw new BrightcoveSubscriptionException(strtr('Default subscription already exist for the :api_client API Client.', [
-            ':api_client' => $this->apiClient->getLabel(),
-          ]));
-        }
+      if ($this->isDefault() && !empty($default_subscription)) {
+        throw new BrightcoveSubscriptionException(strtr('Default subscription already exist for the :api_client API Client.', [
+          ':api_client' => $this->apiClient->getLabel(),
+        ]));
+      }
+      // Otherwise if the API Client does not have a default subscription and
+      // the site's URL matches the subscription's endpoint that needs to be
+      // created make id default.
+      elseif (empty($default_subscription) && $this->getEndpoint() == $default_endpoint) {
+        $this->default = TRUE;
       }
 
       // Create subscription on Brightcove only if the entity is new, as for now
