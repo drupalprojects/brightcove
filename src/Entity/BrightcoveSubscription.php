@@ -404,7 +404,7 @@ class BrightcoveSubscription implements BrightcoveSubscriptionInterface {
         $brightcove_subscription->default = (bool) $data['is_default'];
       }
       if (isset($data['status'])) {
-        $brightcove_subscription->status = $data['status'];
+        $brightcove_subscription->status = (bool) $data['status'];
       }
 
       return $brightcove_subscription;
