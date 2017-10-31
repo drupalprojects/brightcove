@@ -148,3 +148,11 @@ entity.brightcove_subscription.disable:
   requirements:
     _permission: 'administer brightcove configuration'
     _id: ^\d+$
+
+brightcove_cron.settings:
+  path: '/admin/config/system/brightcove_cron'
+  defaults:
+    _form: '\Drupal\brightcove\Form\BrightcoveCronSettingsForm'
+    _title: 'Brightcove Cron'
+  requirements:
+      _permission: 'administer brightcove configuration'
