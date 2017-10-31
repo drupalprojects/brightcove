@@ -149,6 +149,13 @@ entity.brightcove_subscription.disable:
     _permission: 'administer brightcove configuration'
     _id: ^\d+$
 
+entity.brightcove_subscription.create_defaults:
+  path: '/admin/config/system/brightcove_subscription/create-defaults'
+  defaults:
+    _controller: '\Drupal\brightcove\Controller\BrightcoveSubscriptionController::createDefaults'
+  requirements:
+    _permission: 'administer brightcove configuration'
+
 brightcove_cron.settings:
   path: '/admin/config/system/brightcove_cron'
   defaults:

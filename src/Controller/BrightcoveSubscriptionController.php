@@ -3,6 +3,7 @@
 namespace Drupal\brightcove\Controller;
 
 use Drupal\brightcove\BrightcoveUtil;
+use Drupal\brightcove\Entity\BrightcoveAPIClient;
 use Drupal\brightcove\Entity\BrightcoveSubscription;
 use Drupal\brightcove\Entity\BrightcoveVideo;
 use Drupal\brightcove\Entity\Exception\BrightcoveSubscriptionException;
@@ -12,6 +13,7 @@ use Drupal\Core\Database\Connection;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Url;
 use Drupal\Core\Utility\LinkGeneratorInterface;
+use Masterminds\HTML5\Exception;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -220,6 +222,21 @@ class BrightcoveSubscriptionController extends ControllerBase {
       }
     }
 
+    // Check default subscriptions for each api client.
+    $api_clients_without_default_subscription = [];
+    /** @var \Drupal\brightcove\Entity\BrightcoveAPIClient $api_client */
+    foreach (BrightcoveAPIClient::loadMultiple() as $api_client) {
+      if (BrightcoveSubscription::loadDefault($api_client) == NULL) {
+        $api_clients_without_default_subscription[] = $api_client->getLabel();
+      }
+    }
+    if (!empty($api_clients_without_default_subscription)) {
+      drupal_set_message($this->t('You have missing default subscription(s) for the following API Client(s): %api_clients<br>Click <a href="@link">here</a> to create the default subscription(s).', array(
+        '%api_clients' => implode(', ', $api_clients_without_default_subscription),
+        '@link' => Url::fromRoute('entity.brightcove_subscription.create_defaults')->toString(),
+      )), 'warning');
+    }
+
     $page['subscriptions'] = [
       '#theme' => 'table',
       '#header' => $header,
@@ -293,6 +310,77 @@ class BrightcoveSubscriptionController extends ControllerBase {
     catch (\Exception $e) {
       drupal_set_message($this->t('Failed to disable the default subscription: @error', ['@error' => $e->getMessage()]), 'error');
     }
+    return $this->redirect('entity.brightcove_subscription.list');
+  }
+
+  /**
+   * Creates default subscriptions.
+   *
+   * This method must be called through the site's URL, otherwise the default
+   * subscriptions won't be possible to create, because of the missing site URL.
+   */
+  public function createDefaults() {
+    try {
+      // Get all available api clients.
+      $api_clients = BrightcoveAPIClient::loadMultiple();
+
+      foreach ($api_clients as $api_client) {
+        $brightcove_subscription = BrightcoveSubscription::loadDefault($api_client);
+
+        // Try to grab an existing subscription by the site's endpoint URL if
+        // the default doesn't exist for the current api client.
+        $default_endpoint = Url::fromRoute('brightcove_notification_callback', [], ['absolute' => TRUE])->toString();
+        if (empty($brightcove_subscription)) {
+          $brightcove_subscription = BrightcoveSubscription::loadByEndpoint($default_endpoint);
+        }
+
+        // If there is an existing subscription with an endpoint make it
+        // default.
+        if (!empty($brightcove_subscription)) {
+          $this->connection->update('brightcove_subscription')
+            ->fields([
+              'is_default' => 1,
+            ])
+            ->condition('id', $brightcove_subscription->getId())
+            ->execute();
+        }
+        // Otherwise create a new local subscription with the site's URL.
+        else {
+          // Check Brightcove whether if it has a subscription for the default
+          // one.
+          $subscriptions = BrightcoveSubscription::listFromBrightcove($api_client);
+          $subscription_with_default_endpoint = NULL;
+          foreach ($subscriptions as $subscription) {
+            if ($subscription->getEndpoint() == $default_endpoint) {
+              $subscription_with_default_endpoint = $subscription;
+              break;
+            }
+          }
+
+          $brightcove_subscription = new BrightcoveSubscription(TRUE);
+          $brightcove_subscription->setEvents(['video-change']);
+          $brightcove_subscription->setEndpoint($default_endpoint);
+          $brightcove_subscription->setApiClient($api_client);
+
+          if ($subscription_with_default_endpoint != NULL) {
+            $brightcove_subscription->setBcSid($subscription_with_default_endpoint->getId());
+            $brightcove_subscription->setStatus(TRUE);
+          }
+          else {
+            $brightcove_subscription->setStatus(FALSE);
+          }
+
+          $brightcove_subscription->save();
+        }
+      }
+
+      drupal_set_message($this->t('Default subscriptions has been successfully created.'));
+    }
+    catch (\Exception $e) {
+      drupal_set_message($this->t('Failed to create default subscription(s), @error', ['@error' => $e->getMessage()]), 'error');
+      watchdog_exception('brightcove', $e, 'Failed to create default subscription(s), @error', ['@error' => $e->getMessage()]);
+    }
+
     return $this->redirect('entity.brightcove_subscription.list');
   }
 
