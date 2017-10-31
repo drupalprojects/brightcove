@@ -224,6 +224,7 @@ class BrightcoveSubscriptionController extends ControllerBase {
       '#theme' => 'table',
       '#header' => $header,
       '#rows' => $rows,
+      '#empty' => $this->t('There are no subscriptions yet.'),
     ];
 
     return $page;
