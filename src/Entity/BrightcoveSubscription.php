@@ -493,10 +493,10 @@ class BrightcoveSubscription implements BrightcoveSubscriptionInterface {
       }
 
       // Create subscription.
-      $subscription = new SubscriptionRequest();
-      $subscription->setEndpoint($this->getEndpoint());
-      $subscription->setEvents($this->getEvents());
-      $new_subscription = $cms->createSubscription($subscription);
+      $subscription_request = new SubscriptionRequest();
+      $subscription_request->setEndpoint($this->getEndpoint());
+      $subscription_request->setEvents($this->getEvents());
+      $new_subscription = $cms->createSubscription($subscription_request);
       $this->setBcSid($new_subscription->getId());
 
       if ($is_default) {
