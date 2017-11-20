@@ -28,7 +28,7 @@ interface BrightcoveSubscriptionInterface {
    *
    * @return bool
    *   If the entity doesn't have an ID then it will be treated as new, so TRUE
-   *   will be returned, otherwise FALSE will be return if it's an already
+   *   will be return, otherwise FALSE will be return if it's an already
    *   existing entity.
    */
   public function isNew();
