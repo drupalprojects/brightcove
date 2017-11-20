@@ -24,7 +24,7 @@ class BrightcoveSubscription implements BrightcoveSubscriptionInterface {
   /**
    * Brightcove Subscription ID of the entity.
    *
-   * @var int
+   * @var string
    */
   protected $bcsid;
 
