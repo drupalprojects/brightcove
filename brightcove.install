@@ -69,6 +69,8 @@ function brightcove_schema() {
       'indexes' => [
         'bcsid' => ['bcsid'],
         'endpoint' => ['endpoint'],
+        'api_client_id' => ['api_client_id'],
+        'api_client_default' => ['api_client_id', 'is_default'],
       ],
     ],
   ];
@@ -382,6 +384,8 @@ function brightcove_update_8108(&$sandbox) {
       'indexes' => [
         'bcsid' => ['bcsid'],
         'endpoint' => ['endpoint'],
+        'api_client_id' => ['api_client_id'],
+        'api_client_default' => ['api_client_id', 'is_default'],
       ],
     ]);
 }
