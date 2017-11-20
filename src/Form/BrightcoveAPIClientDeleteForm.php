@@ -208,7 +208,7 @@ class BrightcoveAPIClientDeleteForm extends EntityConfirmFormBase {
       }
     }
 
-    // Then collect all available subscriptions belonging to the given api
+    // Then collect all available subscriptions belonging to the given API
     // client, and put them into the delete queue.
     $brightcove_subscriptions = BrightcoveSubscription::loadMultipleByApiClient($entity);
     foreach ($brightcove_subscriptions as $brightcove_subscription) {
