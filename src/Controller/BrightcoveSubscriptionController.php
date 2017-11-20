@@ -350,7 +350,7 @@ class BrightcoveSubscriptionController extends ControllerBase {
           $brightcove_subscription->setEndpoint($default_endpoint);
           $brightcove_subscription->setApiClient($api_client);
 
-          if ($subscription_with_default_endpoint != NULL) {
+          if ($subscription_with_default_endpoint !== NULL) {
             $brightcove_subscription->setBcSid($subscription_with_default_endpoint->getId());
             $brightcove_subscription->setStatus(TRUE);
           }
