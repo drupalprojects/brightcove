@@ -64,7 +64,7 @@ class BrightcoveSubscription implements BrightcoveSubscriptionInterface {
   protected $events;
 
   /**
-   * Drupal database description.
+   * Drupal database connection.
    *
    * @var \Drupal\core\Database\Connection
    */
@@ -173,7 +173,7 @@ class BrightcoveSubscription implements BrightcoveSubscriptionInterface {
   }
 
   /**
-   * BrightcoveSubscription constructor.
+   * Initializes the BrightcoveSubscription Entity object.
    *
    * @param bool $is_default
    *   Whether this subscription should be default or not. There is be only one
@@ -191,7 +191,8 @@ class BrightcoveSubscription implements BrightcoveSubscriptionInterface {
    * @param string $field
    *   The name of the field.
    * @param string|int $value
-   *   The value which against the condition needs to be checked for the field.
+   *   The field's value that needs to be checked to get a specific
+   *   subscription.
    *
    * @return \Drupal\brightcove\Entity\BrightcoveSubscription|null
    *   The default Brightcove Subscription for the given api client or NULL if
@@ -251,7 +252,7 @@ class BrightcoveSubscription implements BrightcoveSubscriptionInterface {
    *   Loaded API Client entity.
    *
    * @return \Drupal\brightcove\Entity\BrightcoveSubscription|null
-   *   The default Brightcove Subscription for the given api client or NULL if
+   *   The default Brightcove Subscription for the given API client or NULL if
    *   not found.
    */
   public static function loadDefault(BrightcoveAPIClient $api_client) {
@@ -308,7 +309,7 @@ class BrightcoveSubscription implements BrightcoveSubscriptionInterface {
   }
 
   /**
-   * Load Subscriptions for a given api client.
+   * Load Subscriptions for a given API client.
    *
    * @param \Drupal\brightcove\Entity\BrightcoveAPIClient $api_client
    *   Loaded API client.
@@ -372,8 +373,8 @@ class BrightcoveSubscription implements BrightcoveSubscriptionInterface {
    *                 the entity.
    *     - bcsid (string): Brightcove Subscription entity identifier.
    *     - api_client_id (string): API Client ID.
-   *     - endpoint (string): Endpoint callback URL.
-   *     - events (string[]): Events list, eg.: video-change.
+   *     - endpoint (string): Endpoint callback URL, required.
+   *     - events (string[]): Events list, eg.: video-change, required.
    *     - is_default (bool): Whether the current Brightcove Subscription is
    *                          default or not. Will be ignored for local entity
    *                          update.
@@ -416,7 +417,7 @@ class BrightcoveSubscription implements BrightcoveSubscriptionInterface {
    * {@inheritdoc}
    *
    * @param bool $upload
-   *   Whether to upload the new subscription on Brightcove or not.
+   *   Whether to upload the new subscription to Brightcove or not.
    */
   public function save($upload = FALSE) {
     // Fields to insert or update.
@@ -435,15 +436,15 @@ class BrightcoveSubscription implements BrightcoveSubscriptionInterface {
       $default_endpoint = Url::fromRoute('brightcove_notification_callback', [], ['absolute' => TRUE])->toString();
 
       // Check whether we already have a default subscription for the API client
-      // and throw an exception if one already exist.
+      // and throw an exception if one already exists.
       if ($this->isDefault() && !empty($default_subscription)) {
-        throw new BrightcoveSubscriptionException(strtr('Default subscription already exist for the :api_client API Client.', [
+        throw new BrightcoveSubscriptionException(strtr('Default subscription already exists for the :api_client API Client.', [
           ':api_client' => $this->apiClient->getLabel(),
         ]));
       }
       // Otherwise if the API Client does not have a default subscription and
       // the site's URL matches the subscription's endpoint that needs to be
-      // created make id default.
+      // created, then make it default.
       elseif (empty($default_subscription) && $this->getEndpoint() == $default_endpoint) {
         $this->default = TRUE;
       }
