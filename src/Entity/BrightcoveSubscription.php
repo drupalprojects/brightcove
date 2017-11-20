@@ -499,6 +499,7 @@ class BrightcoveSubscription implements BrightcoveSubscriptionInterface {
       $new_subscription = $cms->createSubscription($subscription_request);
       $this->setBcSid($new_subscription->getId());
 
+      // If it's a default subscription update the local entity to enable it.
       if ($is_default) {
         $this->setStatus(TRUE);
         $this->save();
