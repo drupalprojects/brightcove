@@ -219,10 +219,10 @@ class BrightcoveSubscriptionController extends ControllerBase {
       }
     }
     if (!empty($api_clients_without_default_subscription)) {
-      drupal_set_message($this->t('You have missing default subscription(s) for the following API Client(s): %api_clients<br>Click <a href="@link">here</a> to create the default subscription(s).', array(
+      drupal_set_message($this->t('There are missing default subscription(s) for the following API Client(s): %api_clients<br><a href="@link">Create missing subscription(s)</a>.', [
         '%api_clients' => implode(', ', $api_clients_without_default_subscription),
         '@link' => Url::fromRoute('entity.brightcove_subscription.create_defaults')->toString(),
-      )), 'warning');
+      ]), 'warning');
     }
 
     $page['subscriptions'] = [
