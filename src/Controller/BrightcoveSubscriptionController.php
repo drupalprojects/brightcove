@@ -317,7 +317,7 @@ class BrightcoveSubscriptionController extends ControllerBase {
 
         // Try to grab an existing subscription by the site's endpoint URL if
         // the default doesn't exist for the current API client.
-        $default_endpoint = Url::fromRoute('brightcove_notification_callback', [], ['absolute' => TRUE])->toString();
+        $default_endpoint = BrightcoveUtil::getDefaultSubscriptionUrl();
         if (empty($brightcove_subscription)) {
           $brightcove_subscription = BrightcoveSubscription::loadByEndpoint($default_endpoint);
         }

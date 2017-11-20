@@ -4,12 +4,12 @@
  * Brightcove install file.
  */
 
+use Drupal\brightcove\BrightcoveUtil;
 use Drupal\brightcove\Entity\BrightcoveAPIClient;
 use Drupal\brightcove\Entity\BrightcoveSubscription;
 use Drupal\brightcove\Entity\BrightcoveVideo;
 use Drupal\Core\Database\Query\Condition;
 use Drupal\Core\Field\BaseFieldDefinition;
-use Drupal\Core\Url;
 
 /**
  * Implements hook_schema().
@@ -228,7 +228,7 @@ function brightcove_update_8106() {
         'status' => FALSE,
         'default' => TRUE,
         'api_client_id' => $client->id(),
-        'endpoint' => Url::fromRoute('brightcove_notification_callback', [], ['absolute' => TRUE])->toString(),
+        'endpoint' => BrightcoveUtil::getDefaultSubscriptionUrl(),
         'events' => ['video-change'],
       ])->save(FALSE);
     }

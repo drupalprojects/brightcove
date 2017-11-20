@@ -10,7 +10,6 @@ use Drupal\brightcove\Entity\BrightcoveAPIClient;
 use Drupal\brightcove\Entity\BrightcovePlayer;
 use Drupal\brightcove\Entity\BrightcovePlaylist;
 use Drupal\brightcove\Entity\BrightcoveVideo;
-use Drupal\Core\Queue\QueueWorkerInterface;
 use Drupal\Core\Queue\SuspendQueueException;
 use Drupal\Core\Url;
 use Drupal\taxonomy\Entity\Term;
@@ -358,4 +357,15 @@ class BrightcoveUtil {
       $entity->setTags($entity_tags);
     }
   }
+
+  /**
+   * Returns the absolute URL path for the notification callback.
+   *
+   * @return string
+   *   The absolute URL path for the notification callback.
+   */
+  public static function getDefaultSubscriptionUrl() {
+    return Url::fromRoute('brightcove_notification_callback', [], ['absolute' => TRUE])->toString();
+  }
+
 }

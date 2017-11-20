@@ -7,7 +7,6 @@ use Brightcove\Object\Subscription;
 use Drupal\brightcove\BrightcoveAPIClientInterface;
 use Drupal\brightcove\BrightcoveUtil;
 use Drupal\brightcove\Entity\Exception\BrightcoveSubscriptionException;
-use Drupal\Core\Url;
 
 /**
  * Defines the Brightcove Subscription entity.
@@ -433,7 +432,7 @@ class BrightcoveSubscription implements BrightcoveSubscriptionInterface {
     if ($this->isNew()) {
       // Try to get a default subscription.
       $default_subscription = self::loadDefault($this->apiClient);
-      $default_endpoint = Url::fromRoute('brightcove_notification_callback', [], ['absolute' => TRUE])->toString();
+      $default_endpoint = BrightcoveUtil::getDefaultSubscriptionUrl();
 
       // Check whether we already have a default subscription for the API client
       // and throw an exception if one already exists.
@@ -486,7 +485,7 @@ class BrightcoveSubscription implements BrightcoveSubscriptionInterface {
       if ($is_default = $this->isDefault()) {
         // Make sure that when the default is enabled, always use the correct
         // URL.
-        $default_endpoint = Url::fromRoute('brightcove_notification_callback', [], ['absolute' => TRUE])->toString();
+        $default_endpoint = BrightcoveUtil::getDefaultSubscriptionUrl();
         if ($this->endpoint != $default_endpoint) {
           $this->setEndpoint($default_endpoint);
         }

@@ -18,7 +18,6 @@ use Drupal\Core\Entity\Query\QueryFactory;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\KeyValueStore\KeyValueStoreExpirableInterface;
 use Drupal\Core\Queue\QueueInterface;
-use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -300,7 +299,7 @@ class BrightcoveAPIClientForm extends EntityForm {
       $subscription = new BrightcoveSubscription(TRUE);
       $subscription->setStatus(FALSE)
         ->setApiClient($entity)
-        ->setEndpoint(Url::fromRoute('brightcove_notification_callback', [], ['absolute' => TRUE])->toString())
+        ->setEndpoint(BrightcoveUtil::getDefaultSubscriptionUrl())
         ->setEvents(['video-change'])
         ->save();
 
