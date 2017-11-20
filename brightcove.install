@@ -3,12 +3,78 @@
  * @file
  * Brightcove install file.
  */
+
+use Drupal\brightcove\BrightcoveUtil;
 use Drupal\brightcove\Entity\BrightcoveAPIClient;
 use Drupal\brightcove\Entity\BrightcoveSubscription;
 use Drupal\brightcove\Entity\BrightcoveVideo;
 use Drupal\Core\Database\Query\Condition;
 use Drupal\Core\Field\BaseFieldDefinition;
-use Drupal\Core\Url;
+
+/**
+ * Implements hook_schema().
+ */
+function brightcove_schema() {
+  return [
+    'brightcove_subscription' => [
+      'description' => 'Brightcove Subscription storage.',
+      'fields' => [
+        'id' => [
+          'description' => 'Internal BrightcoveSubscription entity ID.',
+          'type' => 'serial',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+        ],
+        'bcsid' => [
+          'description' => 'Brightcove Subscription ID.',
+          'type' => 'char',
+          'length' => 36,
+          'not null' => FALSE,
+        ],
+        'status' => [
+          'description' => 'Status of the subscription.',
+          'type' => 'int',
+          'size' => 'tiny',
+          'not null' => TRUE,
+          'default' => 1,
+          'unsigned' => TRUE,
+        ],
+        'is_default' => [
+          'description' => 'Whether the Subscription is default or not.',
+          'type' => 'int',
+          'size' => 'tiny',
+          'not null' => TRUE,
+          'default' => 0,
+          'unsigned' => TRUE,
+        ],
+        'api_client_id' => [
+          'description' => 'The ID of the API client',
+          'type' => 'varchar',
+          'length' => 255,
+          'not null' => TRUE,
+        ],
+        'endpoint' => [
+          'description' => 'The endpoint for the notification.',
+          'type' => 'varchar',
+          'length' => 2000,
+          'not null' => TRUE,
+        ],
+        'events' => [
+          'description' => 'Notification events.',
+          'type' => 'blob',
+          'not null' => TRUE,
+        ],
+      ],
+      'primary key' => ['id'],
+      'indexes' => [
+        'bcsid' => ['bcsid'],
+        'endpoint' => ['endpoint'],
+        'api_client_id' => ['api_client_id'],
+        'api_client_default' => ['api_client_id', 'is_default'],
+      ],
+    ],
+  ];
+}
 
 /**
  * Implements hook_requirements().
@@ -162,7 +228,7 @@ function brightcove_update_8106() {
         'status' => FALSE,
         'default' => TRUE,
         'api_client_id' => $client->id(),
-        'endpoint' => Url::fromRoute('brightcove_notification_callback', [], ['absolute' => TRUE])->toString(),
+        'endpoint' => BrightcoveUtil::getDefaultSubscriptionUrl(),
         'events' => ['video-change'],
       ])->save(FALSE);
     }
@@ -257,4 +323,110 @@ function brightcove_update_8107(&$sandbox) {
   }
 
   $sandbox['#finished'] = $sandbox['progress'] / $sandbox['max'];
+}
+
+/**
+ * Create schema for the BrightcoveSubscription entity.
+ */
+function brightcove_update_8108(&$sandbox) {
+  \Drupal::database()
+    ->schema()
+    ->createTable('brightcove_subscription', [
+      'description' => 'Brightcove Subscription storage.',
+      'fields' => [
+        'id' => [
+          'description' => 'Internal BrightcoveSubscription entity ID.',
+          'type' => 'serial',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+        ],
+        'bcsid' => [
+          'description' => 'Brightcove Subscription ID.',
+          'type' => 'char',
+          'length' => 36,
+          'not null' => FALSE,
+        ],
+        'status' => [
+          'description' => 'Status of the subscription.',
+          'type' => 'int',
+          'size' => 'tiny',
+          'not null' => TRUE,
+          'default' => 1,
+          'unsigned' => TRUE,
+        ],
+        'is_default' => [
+          'description' => 'Whether the Subscription is default or not.',
+          'type' => 'int',
+          'size' => 'tiny',
+          'not null' => TRUE,
+          'default' => 0,
+          'unsigned' => TRUE,
+        ],
+        'api_client_id' => [
+          'description' => 'The ID of the API client',
+          'type' => 'varchar',
+          'length' => 255,
+          'not null' => TRUE,
+        ],
+        'endpoint' => [
+          'description' => 'The endpoint for the notification.',
+          'type' => 'varchar',
+          'length' => 2000,
+          'not null' => TRUE,
+        ],
+        'events' => [
+          'description' => 'Notification events.',
+          'type' => 'blob',
+          'not null' => TRUE,
+        ],
+      ],
+      'primary key' => ['id'],
+      'indexes' => [
+        'bcsid' => ['bcsid'],
+        'endpoint' => ['endpoint'],
+        'api_client_id' => ['api_client_id'],
+        'api_client_default' => ['api_client_id', 'is_default'],
+      ],
+    ]);
+}
+
+/**
+ * Migrate config entity subscriptions.
+ */
+function brightcove_update_8109(&$sandbox) {
+  $container = \Drupal::getContainer();
+
+  /** @var \Drupal\Core\Database\Connection $connection */
+  $connection = $container->get('database');
+
+  // Get existing brightcove subsctiption entities. At this point the config
+  // entity does not exist, so it must be acquired through the database.
+  $results = $connection->select('config', 'c')
+    ->fields('c')
+    ->condition('name', 'brightcove.brightcove_subscription.%', 'LIKE')
+    ->execute();
+
+  // Create new subscription entities.
+  foreach ($results as $result) {
+    // Get data and map to the new fields.
+    $data = unserialize($result->data);
+    $data['bcsid'] = $data['id'];
+    unset($data['id']);
+    $data['is_default'] = $data['default'];
+    unset($data['default']);
+
+    // Save new subscription entity.
+    $brightcove_subscription = BrightcoveSubscription::createFromArray($data);
+    $brightcove_subscription->save();
+  }
+
+  // Remove old subscription config entities.
+  $connection->delete('config')
+    ->condition('name', 'brightcove.brightcove\_subscription.%', 'LIKE')
+    ->execute();
+
+  // Clear cached definitions.
+  /** @var \Drupal\Core\Config\TypedConfigManager $typed_config_manager */
+  $typed_config_manager = $container->get('config.typed');
+  $typed_config_manager->clearCachedDefinitions();
 }

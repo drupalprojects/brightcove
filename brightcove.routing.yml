@@ -1,3 +1,4 @@
+# API Client routes.
 entity.brightcove_api_client.collection:
   path: '/admin/config/media/brightcove_api_client'
   defaults:
@@ -30,6 +31,7 @@ entity.brightcove_api_client.delete_form:
   requirements:
     _permission: 'administer brightcove configuration'
 
+# Video routes.
 entity.brightcove_video.collection:
   path: '/admin/content/brightcove_video'
   defaults:
@@ -37,14 +39,6 @@ entity.brightcove_video.collection:
     _title: 'Brightcove Videos'
   requirements:
     _permission: 'access brightcove videos overview page'
-
-entity.brightcove_playlist.collection:
-  path: '/admin/content/brightcove_playlist'
-  defaults:
-    _entity_list: 'brightcove_playlist'
-    _title: 'Brightcove Playlist'
-  requirements:
-    _permission: 'access brightcove playlists overview page'
 
 brightcove_manual_update_video:
   path: '/brightcove_video/{entity_id}/update'
@@ -54,6 +48,15 @@ brightcove_manual_update_video:
     _permission: 'edit brightcove videos'
     _csrf_token: 'TRUE'
 
+# Playlist routes.
+entity.brightcove_playlist.collection:
+  path: '/admin/content/brightcove_playlist'
+  defaults:
+    _entity_list: 'brightcove_playlist'
+    _title: 'Brightcove Playlist'
+  requirements:
+    _permission: 'access brightcove playlists overview page'
+
 brightcove_manual_update_playlist:
   path: '/brightcove_playlist/{entity_id}/update'
   defaults:
@@ -62,6 +65,7 @@ brightcove_manual_update_playlist:
     _permission: 'edit brightcove playlists'
     _csrf_token: 'TRUE'
 
+# Callback endpoints.
 brightcove_ingestion_callback:
   path: '/brightcove/ingestion-callback/{token}'
   defaults:
@@ -77,6 +81,7 @@ brightcove_notification_callback:
   requirements:
     _access: 'TRUE'
 
+# Status overview page.
 brightcove_status_overview:
   path: '/admin/reports/brightcove'
   defaults:
@@ -85,51 +90,72 @@ brightcove_status_overview:
   requirements:
     _permission: 'administer brightcove configuration'
 
-entity.brightcove_subscription.collection:
-  path: '/admin/config/system/brightcove_subscription'
-  defaults:
-    _entity_list: 'brightcove_subscription'
-    _title: 'Brightcove Subscriptions'
-  requirements:
-    _permission: 'administer brightcove configuration'
-
+# Subscription routes.
 entity.brightcove_subscription.add_form:
   path: '/admin/config/system/brightcove_subscription/add'
   defaults:
-    _entity_form: 'brightcove_subscription.add'
+    _form: '\Drupal\brightcove\Form\BrightcoveSubscriptionForm'
     _title: 'Add Brightcove Subscription'
   requirements:
     _permission: 'administer brightcove configuration'
 
-entity.brightcove_subscription.edit_form:
-  path: '/admin/config/system/brightcove_subscription/{brightcove_subscription}'
-  defaults:
-    _entity_form: 'brightcove_subscription.edit'
-    _title: 'Edit Brightcove Subscription'
-  requirements:
-    _permission: 'administer brightcove configuration'
+# Subscriptions cannot be edited, but keep this here as it may be needed later.
+#entity.brightcove_subscription.edit_form:
+#  path: '/admin/config/system/brightcove_subscription/{id}/edit'
+#  defaults:
+#    _form: '\Drupal\brightcove\Form\BrightcoveSubscriptionForm'
+#    _title: 'Edit Brightcove Subscription'
+#  requirements:
+#    _permission: 'administer brightcove configuration'
 
 entity.brightcove_subscription.delete_form:
-  path: '/admin/config/system/brightcove_subscription/{brightcove_subscription}/delete'
+  path: '/admin/config/system/brightcove_subscription/{id}/delete'
   defaults:
-    _entity_form: 'brightcove_subscription.delete'
+    _form: '\Drupal\brightcove\Form\BrightcoveSubscriptionDeleteForm'
     _title: 'Delete Brightcove Subscription'
   requirements:
     _permission: 'administer brightcove configuration'
+    _id: ^\d+$
+
+entity.brightcove_subscription.list:
+  path: '/admin/config/system/brightcove_subscription'
+  defaults:
+    _controller: '\Drupal\brightcove\Controller\BrightcoveSubscriptionController::listSubscriptions'
+    _title: 'Brightcove Subscriptions'
+  requirements:
+    _permission: 'administer brightcove configuration'
+
+entity.brightcove_subscription.create:
+  path: '/admin/config/system/brightcove_subscription/{id}/create'
+  defaults:
+    _controller: '\Drupal\brightcove\Controller\BrightcoveSubscriptionController::createSubscription'
+  requirements:
+    _permission: 'administer brightcove configuration'
+    _id: ^\d+$
 
 entity.brightcove_subscription.enable:
-  path: '/admin/config/system/brightcove_subscription/{brightcove_subscription}/enable'
+  path: '/admin/config/system/brightcove_subscription/{id}/enable'
   defaults:
     _controller: '\Drupal\brightcove\Controller\BrightcoveSubscriptionController::enable'
   requirements:
     _permission: 'administer brightcove configuration'
+    _id: ^\d+$
 
 entity.brightcove_subscription.disable:
-  path: '/admin/config/system/brightcove_subscription/{brightcove_subscription}/disable'
+  path: '/admin/config/system/brightcove_subscription/{id}/disable'
   defaults:
     _controller: '\Drupal\brightcove\Controller\BrightcoveSubscriptionController::disable'
   requirements:
     _permission: 'administer brightcove configuration'
+    _id: ^\d+$
+
+entity.brightcove_subscription.create_defaults:
+  path: '/admin/config/system/brightcove_subscription/create-defaults'
+  defaults:
+    _controller: '\Drupal\brightcove\Controller\BrightcoveSubscriptionController::createDefaults'
+  requirements:
+    _permission: 'administer brightcove configuration'
+
 brightcove_cron.settings:
   path: '/admin/config/system/brightcove_cron'
   defaults:

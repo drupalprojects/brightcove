@@ -4,23 +4,26 @@ namespace Drupal\brightcove\Form;
 
 use Drupal\brightcove\Entity\BrightcoveAPIClient;
 use Drupal\brightcove\Entity\BrightcoveSubscription;
-use Drupal\Core\Entity\EntityForm;
+use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 
 /**
  * Builds the form for Brightcove Subscription add, edit.
  */
-class BrightcoveSubscriptionForm extends EntityForm {
+class BrightcoveSubscriptionForm extends FormBase {
+
   /**
    * {@inheritdoc}
    */
-  public function form(array $form, FormStateInterface $form_state) {
-    $form = parent::form($form, $form_state);
+  public function getFormId() {
+    return 'brightcove_subscription_form';
+  }
 
-    /** @var BrightcoveSubscription $subscription */
-    $subscription = $this->entity;
-
-    /** @var BrightcoveAPIClient[] $api_clients */
+  /**
+   * {@inheritdoc}
+   */
+  public function buildForm(array $form, FormStateInterface $form_state) {
+    /** @var \Drupal\brightcove\Entity\BrightcoveAPIClient[] $api_clients */
     $api_clients = BrightcoveAPIClient::loadMultiple();
     $api_client_options = [];
     foreach ($api_clients as $api_client) {
@@ -48,13 +51,23 @@ class BrightcoveSubscriptionForm extends EntityForm {
       '#title' => $this->t('Endpoint'),
       '#description' => $this->t('The notifications endpoint.'),
       '#required' => TRUE,
-      '#default_value' => $subscription->getEndpoint(),
     ];
 
     // Hard-code "video-change" event since it's the only one.
     $form['events'] = [
-      '#type' => 'hidden',
-      '#value' => ['video-change'],
+      '#type' => 'checkboxes',
+      '#required' => TRUE,
+      '#title' => 'Events',
+      '#options' => [
+        'video-change' => $this->t('Video change'),
+      ],
+      '#default_value' => ['video-change'],
+      '#disabled' => TRUE,
+    ];
+
+    $form['actions']['submit'] = [
+      '#type' => 'submit',
+      '#value' => $this->t('Add'),
     ];
 
     return $form;
@@ -64,40 +77,27 @@ class BrightcoveSubscriptionForm extends EntityForm {
    * {@inheritdoc}
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
-    /** @var \Drupal\brightcove\Entity\BrightcoveSubscription $entity */
-    $entity = $this->entity;
-
     // Validate endpoint, it should be unique.
-    if (!empty($entity::loadByEndpoint($entity->getEndpoint()))) {
-      $form_state->setErrorByName('endpoint', $this->t('A subscription with the %endpoint endpoint is already exists.', ['%endpoint' => $entity->getEndpoint()]));
+    if (!empty(BrightcoveSubscription::loadByEndpoint($form_state->getValue('endpoint')))) {
+      $form_state->setErrorByName('endpoint', $this->t('A subscription with the %endpoint endpoint already exists.', ['%endpoint' => $form_state->getValue('endpoint')]));
     }
   }
 
   /**
    * {@inheritdoc}
    */
-  public function save(array $form, FormStateInterface $form_state) {
-    /** @var \Drupal\brightcove\Entity\BrightcoveSubscription $entity */
-    $entity = $this->entity;
-
+  public function submitForm(array &$form, FormStateInterface $form_state) {
     try {
-      $status = parent::save($form, $form_state);
+      $brightcove_subscription = BrightcoveSubscription::createFromArray([
+        'api_client_id' => $form_state->getValue('api_client_id'),
+        'endpoint' => $form_state->getValue('endpoint'),
+        'events' => array_values($form_state->getValue('events')),
+      ]);
+      $brightcove_subscription->save(TRUE);
 
-      switch ($status) {
-        case SAVED_NEW:
-          drupal_set_message($this->t('Created Brightcove Subscription with %endpoint endpoint.', [
-            '%endpoint' => $entity->getEndpoint(),
-          ]));
-          break;
-
-        default:
-          drupal_set_message($this->t('Saved Brightcove Subscription with %endpoint endpoint.', [
-            '%endpoint' => $entity->getEndpoint(),
-          ]));
-      }
-
-      // Redirect back to the Subscriptions list.
-      $form_state->setRedirect('entity.brightcove_subscription.collection');
+      drupal_set_message($this->t('Created Brightcove Subscription with %endpoint endpoint.', [
+        '%endpoint' => $brightcove_subscription->getEndpoint(),
+      ]));
     }
     catch (\Exception $e) {
       // In case of an exception, show an error message and rebuild the form.
@@ -111,6 +111,8 @@ class BrightcoveSubscriptionForm extends EntityForm {
       $form_state->setRebuild(TRUE);
     }
 
-    return !empty($status) ? $status : NULL;
+    // Redirect back to the Subscriptions list.
+    $form_state->setRedirect('entity.brightcove_subscription.list');
   }
+
 }

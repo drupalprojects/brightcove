@@ -44,10 +44,10 @@ brightcove_status_overview:
   parent: system.admin_reports
 
 # Brightcove Subscriptions
-entity.brightcove_subscription.collection:
+entity.brightcove_subscription.list:
   title: 'Brightcove Subscriptions'
   description: 'Manage Brightcove subscriptions.'
-  route_name: entity.brightcove_subscription.collection
+  route_name: entity.brightcove_subscription.list
   parent: system.admin_config_system
 
 # Brightcove Cron
@@ -56,3 +56,4 @@ brightcove_cron.settings:
   description: 'Manage Brightcove cron settings.'
   route_name: brightcove_cron.settings
   parent: system.admin_config_system
+

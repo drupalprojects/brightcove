@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file
  * Brightcove module.
@@ -130,13 +131,12 @@ function _brightcove_initiate_sync() {
     }
 
     // Remove non-existing Subscriptions.
-    /** @var BrightcoveSubscription[] $subscriptions */
-    $subscriptions = BrightcoveSubscription::loadMultiple();
-    foreach ($subscriptions as $subscription) {
-      if (!empty($api_client = $subscription->getAPIClient()) && strpos($subscription->id(), 'default_') === FALSE) {
+    $brightcove_subscriptions = BrightcoveSubscription::loadMultiple();
+    foreach ($brightcove_subscriptions as $brightcove_subscription) {
+      if (!empty($api_client = $brightcove_subscription->getApiClient())) {
         $subscription_delete_queue->createItem([
-          'api_client_id' =>  $api_client->id(),
-          'subscription_id' => $subscription->id(),
+          'api_client_id' => $api_client->id(),
+          'subscription_id' => $brightcove_subscription->getBcSid(),
         ]);
       }
     }
