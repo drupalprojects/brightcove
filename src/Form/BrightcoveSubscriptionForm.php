@@ -79,7 +79,7 @@ class BrightcoveSubscriptionForm extends FormBase {
   public function validateForm(array &$form, FormStateInterface $form_state) {
     // Validate endpoint, it should be unique.
     if (!empty(BrightcoveSubscription::loadByEndpoint($form_state->getValue('endpoint')))) {
-      $form_state->setErrorByName('endpoint', $this->t('A subscription with the %endpoint endpoint is already exists.', ['%endpoint' => $form_state->getValue('endpoint')]));
+      $form_state->setErrorByName('endpoint', $this->t('A subscription with the %endpoint endpoint already exists.', ['%endpoint' => $form_state->getValue('endpoint')]));
     }
   }
 
