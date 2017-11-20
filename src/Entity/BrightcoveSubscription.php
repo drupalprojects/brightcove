@@ -194,7 +194,7 @@ class BrightcoveSubscription implements BrightcoveSubscriptionInterface {
    *   subscription.
    *
    * @return \Drupal\brightcove\Entity\BrightcoveSubscription|null
-   *   The default Brightcove Subscription for the given api client or NULL if
+   *   The default Brightcove Subscription for the given API client or NULL if
    *   not found.
    *
    * @throws \Drupal\brightcove\Entity\Exception\BrightcoveSubscriptionException
