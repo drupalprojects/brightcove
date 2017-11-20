@@ -309,20 +309,20 @@ class BrightcoveSubscriptionController extends ControllerBase {
    */
   public function createDefaults() {
     try {
-      // Get all available api clients.
+      // Get all available API clients.
       $api_clients = BrightcoveAPIClient::loadMultiple();
 
       foreach ($api_clients as $api_client) {
         $brightcove_subscription = BrightcoveSubscription::loadDefault($api_client);
 
         // Try to grab an existing subscription by the site's endpoint URL if
-        // the default doesn't exist for the current api client.
+        // the default doesn't exist for the current API client.
         $default_endpoint = Url::fromRoute('brightcove_notification_callback', [], ['absolute' => TRUE])->toString();
         if (empty($brightcove_subscription)) {
           $brightcove_subscription = BrightcoveSubscription::loadByEndpoint($default_endpoint);
         }
 
-        // If there is an existing subscription with an endpoint make it
+        // If there is an existing subscription with an endpoint, make it
         // default.
         if (!empty($brightcove_subscription)) {
           $this->connection->update('brightcove_subscription')
@@ -345,6 +345,7 @@ class BrightcoveSubscriptionController extends ControllerBase {
             }
           }
 
+          // Create a new default subscription for the API client.
           $brightcove_subscription = new BrightcoveSubscription(TRUE);
           $brightcove_subscription->setEvents(['video-change']);
           $brightcove_subscription->setEndpoint($default_endpoint);
