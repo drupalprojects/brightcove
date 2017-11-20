@@ -44,8 +44,10 @@ class BrightcoveSubscriptionDeleteQueueWorker extends QueueWorkerBase {
           $brightcove_subscription = BrightcoveSubscription::loadByBcSid($data['subscription_id']);
 
           if (!empty($brightcove_subscription)) {
-            // In case of a default API client default, just unset the
-            // association.
+            // In case of a default subscription, unset the entity's
+            // association with the Brightcove entity, but keep a local entity
+            // in Drupal without the Brightcove ID and set its status to
+            // disabled.
             if ($brightcove_subscription->isDefault()) {
               $brightcove_subscription->setBcSid(NULL);
               $brightcove_subscription->setStatus(FALSE);
