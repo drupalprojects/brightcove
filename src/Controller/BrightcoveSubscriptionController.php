@@ -13,7 +13,6 @@ use Drupal\Core\Database\Connection;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Url;
 use Drupal\Core\Utility\LinkGeneratorInterface;
-use Masterminds\HTML5\Exception;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -24,13 +23,6 @@ use Symfony\Component\HttpFoundation\Response;
  * @package Drupal\brightcove\Controller
  */
 class BrightcoveSubscriptionController extends ControllerBase {
-
-  /**
-   * Drupal container.
-   *
-   * @var \Symfony\Component\DependencyInjection\ContainerInterface
-   */
-  protected $container;
 
   /**
    * Database connection.
@@ -58,7 +50,6 @@ class BrightcoveSubscriptionController extends ControllerBase {
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container,
       $container->get('database'),
       $container->get('link_generator'),
       $container->get('entity_type.manager')->getStorage('brightcove_video')
@@ -68,8 +59,6 @@ class BrightcoveSubscriptionController extends ControllerBase {
   /**
    * BrightcoveSubscriptionController constructor.
    *
-   * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
-   *   Drupal container.
    * @param \Drupal\Core\Database\Connection $connection
    *   Database connection.
    * @param \Drupal\Core\Utility\LinkGeneratorInterface $link_generator
@@ -77,8 +66,7 @@ class BrightcoveSubscriptionController extends ControllerBase {
    * @param \Drupal\Core\Entity\EntityStorageInterface $video_storage
    *   Brightcove video storage.
    */
-  public function __construct(ContainerInterface $container, Connection $connection, LinkGeneratorInterface $link_generator, EntityStorageInterface $video_storage) {
-    $this->container = $container;
+  public function __construct(Connection $connection, LinkGeneratorInterface $link_generator, EntityStorageInterface $video_storage) {
     $this->connection = $connection;
     $this->linkGenerator = $link_generator;
     $this->videoStorage = $video_storage;
