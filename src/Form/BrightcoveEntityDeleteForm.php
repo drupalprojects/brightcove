@@ -4,7 +4,11 @@ namespace Drupal\brightcove\Form;
 
 use Drupal\Core\Entity\ContentEntityDeleteForm;
 
+/**
+ * Builds form for Brightcove content entity delete.
+ */
 class BrightcoveEntityDeleteForm extends ContentEntityDeleteForm {
+
   /**
    * {@inheritdoc}
    */
@@ -46,4 +50,5 @@ class BrightcoveEntityDeleteForm extends ContentEntityDeleteForm {
       '%label' => $this->getEntity()->label(),
     ]);
   }
+
 }

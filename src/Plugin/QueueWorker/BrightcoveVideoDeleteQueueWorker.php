@@ -19,6 +19,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * )
  */
 class BrightcoveVideoDeleteQueueWorker extends QueueWorkerBase implements ContainerFactoryPluginInterface {
+
   /**
    * The brightcove_video storage.
    *
@@ -38,7 +39,7 @@ class BrightcoveVideoDeleteQueueWorker extends QueueWorkerBase implements Contai
    * @param \Drupal\Core\Entity\EntityStorageInterface $storage
    *   Brightcove Video Entity storage.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityStorageInterface $storage) {
+  public function __construct(array $configuration, $plugin_id, array $plugin_definition, EntityStorageInterface $storage) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->storage = $storage;
   }
@@ -54,13 +55,14 @@ class BrightcoveVideoDeleteQueueWorker extends QueueWorkerBase implements Contai
       $container->get('entity_type.manager')->getStorage('brightcove_video')
     );
   }
+
   /**
    * {@inheritdoc}
    */
   public function processItem($data) {
     // Check the video if it is available on Brightcove or not.
     try {
-      $cms = BrightcoveUtil::getCMSAPI($data->api_client);
+      $cms = BrightcoveUtil::getCmsApi($data->api_client);
       $cms->getVideo($data->video_id);
     }
     catch (APIException $e) {
@@ -76,4 +78,5 @@ class BrightcoveVideoDeleteQueueWorker extends QueueWorkerBase implements Contai
       }
     }
   }
+
 }

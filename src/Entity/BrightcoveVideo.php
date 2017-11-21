@@ -14,7 +14,6 @@ use Brightcove\Object\Video\TextTrackSource;
 use Brightcove\Object\Video\Video;
 use Drupal\brightcove\BrightcoveUtil;
 use Drupal\Component\Utility\Crypt;
-use Drupal\Core\Database\Database;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
@@ -73,11 +72,12 @@ use Drupal\time_formatter\Plugin\Field\FieldFormatter\TimeFieldFormatter;
  *   field_ui_base_route = "brightcove_video.settings"
  * )
  */
-class BrightcoveVideo extends BrightcoveVideoPlaylistCMSEntity implements BrightcoveVideoInterface {
+class BrightcoveVideo extends BrightcoveVideoPlaylistCmsEntity implements BrightcoveVideoInterface {
+
   /**
    * Ingestion request object.
    *
-   * @var \Brightcove\API\Request\IngestRequest;
+   * @var \Brightcove\API\Request\IngestRequest
    */
   protected $ingestRequest = NULL;
 
@@ -85,6 +85,7 @@ class BrightcoveVideo extends BrightcoveVideoPlaylistCMSEntity implements Bright
    * Create or get an existing ingestion request object.
    *
    * @return \Brightcove\API\Request\IngestRequest
+   *   Returns an ingestion request object.
    */
   protected function getIngestRequest() {
     if (is_null($this->ingestRequest)) {
@@ -102,7 +103,7 @@ class BrightcoveVideo extends BrightcoveVideoPlaylistCMSEntity implements Bright
    * @param array &$values
    *   The field's values array.
    */
-  protected function provideDefaultValuesForImageField(&$values) {
+  protected function provideDefaultValuesForImageField(array &$values) {
     /** @var \Drupal\file\Entity\File $file */
     foreach ($values as $delta => &$value) {
       $file = File::load($value['target_id']);
@@ -159,7 +160,7 @@ class BrightcoveVideo extends BrightcoveVideoPlaylistCMSEntity implements Bright
         if (!is_null($file) && $file->getFileName() != $matches[1]) {
           $this->{"set{$function}"}(NULL);
         }
-        else if (!is_null($file) && $file->getFilename() == $matches[1]) {
+        elseif (!is_null($file) && $file->getFilename() == $matches[1]) {
           $needs_save = FALSE;
         }
       }
@@ -217,10 +218,11 @@ class BrightcoveVideo extends BrightcoveVideoPlaylistCMSEntity implements Bright
   /**
    * Create an ingestion request for image.
    *
-   * @param $type
+   * @param string $type
    *   The type of the image, possible values are:
    *     - IMAGE_TYPE_POSTER
    *     - IMAGE_TYPE_THUMBNAIL
+   *   .
    *
    * @throws \Exception
    *   If the $type is not matched with the possible types.
@@ -260,7 +262,7 @@ class BrightcoveVideo extends BrightcoveVideoPlaylistCMSEntity implements Bright
   /**
    * Get a random hash token for ingestion request callback.
    *
-   * @return string|NULL
+   * @return string|null
    *   The generated random token or NULL if an error happened.
    */
   protected function getIngestionToken() {
@@ -270,8 +272,7 @@ class BrightcoveVideo extends BrightcoveVideoPlaylistCMSEntity implements Bright
       // Generate unique token.
       do {
         $token = Crypt::hmacBase64($this->getVideoId(), Crypt::randomBytesBase64() . Settings::getHashSalt());
-      }
-      while (\Drupal::keyValueExpirable('brightcove_callback')->has($token));
+      } while (\Drupal::keyValueExpirable('brightcove_callback')->has($token));
 
       // Insert unique token into database.
       \Drupal::keyValueExpirable('brightcove_callback')
@@ -402,7 +403,7 @@ class BrightcoveVideo extends BrightcoveVideoPlaylistCMSEntity implements Bright
    */
   public function setVideoFile($video_file) {
     $video_to_delete = $this->getVideoFile();
-    if (is_null($video_file) && !empty($video_to_delete['target_id'])) {
+    if ($video_file == NULL && !empty($video_to_delete['target_id'])) {
       $this->deleteFile($video_to_delete['target_id']);
     }
     $this->set('video_file', $video_file);
@@ -575,9 +576,9 @@ class BrightcoveVideo extends BrightcoveVideoPlaylistCMSEntity implements Bright
   /**
    * Loads a Video based on the Brightcove Video ID and Account ID.
    *
-   * @param $account_id
+   * @param string $account_id
    *   The ID of the account.
-   * @param $brightcove_video_id
+   * @param string $brightcove_video_id
    *   The External ID of the Video.
    *
    * @return \Drupal\Core\Entity\EntityInterface|static
@@ -614,7 +615,7 @@ class BrightcoveVideo extends BrightcoveVideoPlaylistCMSEntity implements Bright
 
     // Upload data for Brightcove only if we saved the video from form.
     if ($upload) {
-      $cms = BrightcoveUtil::getCMSAPI($this->getAPIClient());
+      $cms = BrightcoveUtil::getCmsApi($this->getApiClient());
 
       // Setup video object and set minimum required values.
       $video = new Video();
@@ -685,12 +686,12 @@ class BrightcoveVideo extends BrightcoveVideoPlaylistCMSEntity implements Bright
 
       // Save or update reference ID if needed.
       if ($this->isFieldChanged('reference_id')) {
-        $video->setReferenceId($this->getReferenceID());
+        $video->setReferenceId($this->getReferenceId());
       }
 
       // Save or update custom field values.
       $custom_field_num = \Drupal::entityQuery('brightcove_custom_field')
-        ->condition('api_client', $this->getAPIClient())
+        ->condition('api_client', $this->getApiClient())
         ->count()
         ->execute();
       if ($this->isFieldChanged('custom_field_values') && $custom_field_num) {
@@ -733,7 +734,7 @@ class BrightcoveVideo extends BrightcoveVideoPlaylistCMSEntity implements Bright
 
             if (!is_null($text_track_entity)) {
               // Setup ingestion request if there was a text track uploaded.
-              $webvtt_file = $text_track_entity->getWebVTTFile();
+              $webvtt_file = $text_track_entity->getWebVttFile();
               if (!empty($webvtt_file[0]['target_id'])) {
                 /** @var \Drupal\file\Entity\File $file */
                 $file = File::load($webvtt_file[0]['target_id']);
@@ -832,7 +833,7 @@ class BrightcoveVideo extends BrightcoveVideoPlaylistCMSEntity implements Bright
         $ingest_master->setUrl(file_create_url($file->getFileUri()));
 
         $ingest_request->setMaster($ingest_master);
-        $profiles = self::getProfileAllowedValues($this->getAPIClient());
+        $profiles = self::getProfileAllowedValues($this->getApiClient());
         $ingest_request->setProfile($profiles[$this->getProfile()]);
       }
 
@@ -843,7 +844,7 @@ class BrightcoveVideo extends BrightcoveVideoPlaylistCMSEntity implements Bright
         $ingest_master = new IngestRequestMaster();
         $ingest_master->setUrl($this->getVideoUrl());
         $ingest_request->setMaster($ingest_master);
-        $profiles = self::getProfileAllowedValues($this->getAPIClient());
+        $profiles = self::getProfileAllowedValues($this->getApiClient());
         $ingest_request->setProfile($profiles[$this->getProfile()]);
       }
 
@@ -870,7 +871,7 @@ class BrightcoveVideo extends BrightcoveVideoPlaylistCMSEntity implements Bright
         }
 
         // Send request.
-        $di = BrightcoveUtil::getDIAPI($this->getAPIClient());
+        $di = BrightcoveUtil::getDiApi($this->getApiClient());
         $di->createIngest($this->getVideoId(), $this->ingestRequest);
       }
 
@@ -902,15 +903,15 @@ class BrightcoveVideo extends BrightcoveVideoPlaylistCMSEntity implements Bright
   public function delete($local_only = FALSE) {
     // Delete video from Brightcove.
     if (!$this->isNew() && !$local_only) {
-      $api_client = BrightcoveUtil::getAPIClient($this->getAPIClient());
+      $api_client = BrightcoveUtil::getApiClient($this->getApiClient());
       $client = $api_client->getClient();
 
       // Delete video references.
       try {
-        $client->request('DELETE', 'cms', $api_client->getAccountID(), "/videos/{$this->getVideoId()}/references", NULL);
+        $client->request('DELETE', 'cms', $api_client->getAccountId(), "/videos/{$this->getVideoId()}/references", NULL);
 
         // Delete video.
-        $cms = BrightcoveUtil::getCMSAPI($this->getAPIClient());
+        $cms = BrightcoveUtil::getCmsApi($this->getApiClient());
         $cms->deleteVideo($this->getVideoId());
 
         parent::delete();
@@ -939,7 +940,7 @@ class BrightcoveVideo extends BrightcoveVideoPlaylistCMSEntity implements Bright
     // Set weights based on the real order of the fields.
     $weight = -30;
 
-    /**
+    /*
      * Drupal-specific fields first.
      *
      * bcvid - Brightcove Video ID (Drupal-internal).
@@ -999,7 +1000,6 @@ class BrightcoveVideo extends BrightcoveVideoPlaylistCMSEntity implements Bright
     $fields['status'] = BaseFieldDefinition::create('boolean')
       ->setLabel(t('Enabled'))
       ->setDescription(t('Determines whether the video is playable.'))
-      //->setRevisionable(TRUE)
       ->setDefaultValue(TRUE)
       ->setSettings([
         'on_label' => t('Active'),
@@ -1021,7 +1021,6 @@ class BrightcoveVideo extends BrightcoveVideoPlaylistCMSEntity implements Bright
     $fields['name'] = BaseFieldDefinition::create('string')
       ->setLabel(t('Name'))
       ->setDescription(t('Title of the video.'))
-      //->setRevisionable(TRUE)
       ->setRequired(TRUE)
       ->setSettings([
         // Not applying the max_length setting any longer. Without an explicit
@@ -1045,14 +1044,13 @@ class BrightcoveVideo extends BrightcoveVideoPlaylistCMSEntity implements Bright
     $fields['langcode'] = BaseFieldDefinition::create('language')
       ->setLabel(t('Language code'))
       ->setDescription(t('The language code for the Brightcove Video.'))
-      //->setRevisionable(TRUE)
       ->setDisplayOptions('form', [
         'type' => 'language_select',
         'weight' => ++$weight,
       ])
       ->setDisplayConfigurable('form', TRUE);
 
-    /**
+    /*
      * Additional Brightcove fields, based on
      * @see https://videocloud.brightcove.com/admin/fields
      * superseded by
@@ -1121,7 +1119,6 @@ class BrightcoveVideo extends BrightcoveVideoPlaylistCMSEntity implements Bright
     $fields['description'] = BaseFieldDefinition::create('string_long')
       ->setLabel(t('Short description'))
       ->setDescription(t('Max 250 characters.'))
-      //->setRevisionable(TRUE)
       ->setDisplayOptions('form', [
         'type' => 'string_textarea',
         'weight' => ++$weight,
@@ -1144,7 +1141,6 @@ class BrightcoveVideo extends BrightcoveVideoPlaylistCMSEntity implements Bright
       ->setDescription(t('Max 1200 tags per video'))
       // We can't really say 1200 here as it'd yield 1200 textfields on the UI.
       ->setCardinality(FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED)
-      //->setRevisionable(TRUE)
       ->setSettings([
         'target_type' => 'taxonomy_term',
         'handler_settings' => [
@@ -1169,7 +1165,6 @@ class BrightcoveVideo extends BrightcoveVideoPlaylistCMSEntity implements Bright
 
     $fields['related_link'] = BaseFieldDefinition::create('link')
       ->setLabel(t('Related Link'))
-      //->setRevisionable(TRUE)
       ->setSettings([
         'max_length' => 150,
         'link_type' => LinkItemInterface::LINK_GENERIC,
@@ -1195,7 +1190,6 @@ class BrightcoveVideo extends BrightcoveVideoPlaylistCMSEntity implements Bright
       ->setLabel(t('Reference ID'))
       ->addConstraint('UniqueField')
       ->setDescription(t('Value specified must be unique'))
-      //->setRevisionable(TRUE)
       ->setSettings([
         'max_length' => 150,
         'text_processing' => 0,
@@ -1216,7 +1210,6 @@ class BrightcoveVideo extends BrightcoveVideoPlaylistCMSEntity implements Bright
     $fields['long_description'] = BaseFieldDefinition::create('string_long')
       ->setLabel(t('Long description'))
       ->setDescription(t('Max 5000 characters'))
-      //->setRevisionable(TRUE)
       ->setDisplayOptions('form', [
         'type' => 'string_textarea',
         'weight' => ++$weight,
@@ -1237,7 +1230,6 @@ class BrightcoveVideo extends BrightcoveVideoPlaylistCMSEntity implements Bright
     // Advertising field, but Brightcove calls it 'economics' in the API.
     $fields['economics'] = BaseFieldDefinition::create('list_string')
       ->setLabel(t('Advertising'))
-      //->setRevisionable(TRUE)
       ->setRequired(TRUE)
       ->setDefaultValue(self::ECONOMICS_TYPE_FREE)
       ->setSetting('allowed_values', [
@@ -1260,7 +1252,6 @@ class BrightcoveVideo extends BrightcoveVideoPlaylistCMSEntity implements Bright
 
     $fields['video_file'] = BaseFieldDefinition::create('file')
       ->setLabel(t('Video source'))
-      //->setRevisionable(TRUE)
       ->setSettings([
         'file_extensions' => '3gp 3g2 aac ac3 asf avchd avi avs bdav dv dxa ea eac3 f4v flac flv h261 h263 h264 m2p m2ts m4a m4v mjpeg mka mks mkv mov mp3 mp4 mpeg mpegts mpg mt2s mts ogg ps qt rtsp thd ts vc1 wav webm wma wmv',
         'file_directory' => '[random:hash:md5]',
@@ -1277,7 +1268,7 @@ class BrightcoveVideo extends BrightcoveVideoPlaylistCMSEntity implements Bright
       ->setDisplayConfigurable('form', TRUE)
       ->setDisplayConfigurable('view', TRUE);
 
-    // Provide an external URL
+    // Provide an external URL.
     $fields['video_url'] = BaseFieldDefinition::create('uri')
       ->setLabel(t('Video source URL'))
       ->setDisplayOptions('form', [
@@ -1298,7 +1289,6 @@ class BrightcoveVideo extends BrightcoveVideoPlaylistCMSEntity implements Bright
 
     $fields['profile'] = BaseFieldDefinition::create('list_string')
       ->setLabel(t('Encoding profile'))
-      //->setRevisionable(TRUE)
       ->setRequired(TRUE)
       ->setSetting('allowed_values_function', [self::class, 'profileAllowedValues'])
       ->setDisplayOptions('form', [
@@ -1309,7 +1299,6 @@ class BrightcoveVideo extends BrightcoveVideoPlaylistCMSEntity implements Bright
 
     $fields['poster'] = BaseFieldDefinition::create('image')
       ->setLabel(t('Video Still'))
-      //->setRevisionable(TRUE)
       ->setSettings([
         'file_extensions' => 'jpg jpeg png',
         'file_directory' => self::VIDEOS_IMAGES_POSTERS_DIR,
@@ -1330,7 +1319,6 @@ class BrightcoveVideo extends BrightcoveVideoPlaylistCMSEntity implements Bright
 
     $fields['thumbnail'] = BaseFieldDefinition::create('image')
       ->setLabel(t('Thumbnail'))
-      //->setRevisionable(TRUE)
       ->setSettings([
         'file_extensions' => 'jpg jpeg png',
         'file_directory' => self::VIDEOS_IMAGES_THUMBNAILS_DIR,
@@ -1350,12 +1338,10 @@ class BrightcoveVideo extends BrightcoveVideoPlaylistCMSEntity implements Bright
       ->setDisplayConfigurable('view', TRUE);
 
     $fields['custom_field_values'] = BaseFieldDefinition::create('map');
-      //->setRevisionable(TRUE)
 
     $fields['schedule_starts_at'] = BaseFieldDefinition::create('datetime')
       ->setLabel(t('Scheduled Start Date'))
       ->setDescription(t('If not specified, the video will be Available Immediately.'))
-      //->setRevisionable(TRUE)
       ->setDisplayOptions('form', [
         'type' => 'datetime_default',
         'weight' => ++$weight,
@@ -1371,7 +1357,6 @@ class BrightcoveVideo extends BrightcoveVideoPlaylistCMSEntity implements Bright
     $fields['schedule_ends_at'] = BaseFieldDefinition::create('datetime')
       ->setLabel(t('Scheduled End Date'))
       ->setDescription(t('If not specified, the video will have No End Date.'))
-      //->setRevisionable(TRUE)
       ->setDisplayOptions('form', [
         'type' => 'datetime_default',
         'weight' => ++$weight,
@@ -1407,7 +1392,6 @@ class BrightcoveVideo extends BrightcoveVideoPlaylistCMSEntity implements Bright
     $fields['uid'] = BaseFieldDefinition::create('entity_reference')
       ->setLabel(t('Authored by'))
       ->setDescription(t('The username of the Brightcove Video author.'))
-      //->setRevisionable(TRUE)
       ->setTranslatable(TRUE)
       ->setDefaultValueCallback('Drupal\brightcove\Entity\BrightcoveVideo::getCurrentUserId')
       ->setSetting('target_type', 'user')
@@ -1432,7 +1416,6 @@ class BrightcoveVideo extends BrightcoveVideoPlaylistCMSEntity implements Bright
     $fields['created'] = BaseFieldDefinition::create('created')
       ->setLabel(t('Created'))
       ->setDescription(t('The time that the Brightcove Video was created.'))
-      //->setRevisionable(TRUE)
       ->setTranslatable(TRUE)
       ->setDisplayOptions('view', [
         'label' => 'inline',
@@ -1444,13 +1427,11 @@ class BrightcoveVideo extends BrightcoveVideoPlaylistCMSEntity implements Bright
     $fields['changed'] = BaseFieldDefinition::create('changed')
       ->setLabel(t('Changed'))
       ->setDescription(t('The time that the Brightcove Video was last edited.'))
-      //->setRevisionable(TRUE)
       ->setTranslatable(TRUE);
 
     // FIXME: Couldn't find this on the Brightcove UI: https://studio.brightcove.com/products/videocloud/media/videos/4585854207001
     $fields['force_ads'] = BaseFieldDefinition::create('boolean')
       ->setLabel(t('Force Ads'))
-      //->setRevisionable(TRUE)
       ->setDefaultValue(FALSE);
 
     // FIXME: Couldn't find this on the Brightcove UI: https://studio.brightcove.com/products/videocloud/media/videos/4585854207001
@@ -1458,19 +1439,20 @@ class BrightcoveVideo extends BrightcoveVideoPlaylistCMSEntity implements Bright
       ->setLabel(t('Geo-filtering Country List'))
       ->setDescription(t('ISO-3166 country code list.'))
       ->setCardinality(FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED)
-      //->setRevisionable(TRUE)
       ->setSettings([
         'max_length' => 5,
         'text_processing' => 0,
       ])
       // FIXME: Use a dropdown to select the country code/country name instead.
       ->setDisplayOptions('form', [
-        'type' => 'hidden', // Usable default: string_textfield.
+        // Usable default type: string_textfield.
+        'type' => 'hidden',
         'weight' => ++$weight,
       ])
       // FIXME: Display the country name instead.
       ->setDisplayOptions('view', [
-        'type' => 'hidden', // Usable default: string.
+        // Usable default type: string.
+        'type' => 'hidden',
         'label' => 'above',
         'weight' => $weight,
       ])
@@ -1480,17 +1462,18 @@ class BrightcoveVideo extends BrightcoveVideoPlaylistCMSEntity implements Bright
     // FIXME: Couldn't find this on the Brightcove UI: https://studio.brightcove.com/products/videocloud/media/videos/4585854207001
     $fields['geo_restricted'] = BaseFieldDefinition::create('boolean')
       ->setLabel(t('Geo-filtering On'))
-      //->setRevisionable(TRUE)
       ->setDefaultValue(FALSE)
       ->setDisplayOptions('form', [
-        'type' => 'hidden', // Usable default: boolean_checkbox.
+        // Usable default type: boolean_checkbox.
+        'type' => 'hidden',
         'weight' => ++$weight,
         'settings' => [
           'display_label' => TRUE,
         ],
       ])
       ->setDisplayOptions('view', [
-        'type' => 'hidden', // Usable default: string.
+        // Usable default type: string.
+        'type' => 'hidden',
         'label' => 'inline',
         'weight' => $weight,
       ])
@@ -1501,16 +1484,17 @@ class BrightcoveVideo extends BrightcoveVideoPlaylistCMSEntity implements Bright
     $fields['geo_exclude_countries'] = BaseFieldDefinition::create('boolean')
       ->setLabel(t('Geo-filtering Options: Exclude countries'))
       ->setDescription(t('If enabled, country list is treated as a list of countries excluded from viewing.'))
-      //->setRevisionable(TRUE)
       ->setDisplayOptions('form', [
-        'type' => 'hidden', // Usable default: boolean_checkbox.
+        // Usable default type: boolean_checkbox.
+        'type' => 'hidden',
         'weight' => ++$weight,
         'settings' => [
           'display_label' => TRUE,
         ],
       ])
       ->setDisplayOptions('view', [
-        'type' => 'hidden', // Usable default: string.
+        // Usable default type: string.
+        'type' => 'hidden',
         'label' => 'inline',
         'weight' => $weight,
       ])
@@ -1521,7 +1505,6 @@ class BrightcoveVideo extends BrightcoveVideoPlaylistCMSEntity implements Bright
     $fields['logo_alignment'] = BaseFieldDefinition::create('list_string')
       ->setLabel(t('Logo Overlay Alignment'))
       ->setCardinality(4)
-      //->setRevisionable(TRUE)
       ->setSetting('allowed_values', [
         'top_left' => 'Top Left',
         'top_right' => 'Top Right',
@@ -1529,11 +1512,13 @@ class BrightcoveVideo extends BrightcoveVideoPlaylistCMSEntity implements Bright
         'bottom_right' => 'Bottom Right',
       ])
       ->setDisplayOptions('form', [
-        'type' => 'hidden', // Usable default: options_select.
+        // Usable default type: options_select.
+        'type' => 'hidden',
         'weight' => ++$weight,
       ])
       ->setDisplayOptions('view', [
-        'type' => 'hidden', // Usable default: string.
+        // Usable default type: string.
+        'type' => 'hidden',
         'label' => 'above',
         'weight' => $weight,
       ])
@@ -1543,7 +1528,6 @@ class BrightcoveVideo extends BrightcoveVideoPlaylistCMSEntity implements Bright
     // FIXME: Couldn't find this on the Brightcove UI: https://studio.brightcove.com/products/videocloud/media/videos/4585854207001
     $fields['logo_image'] = BaseFieldDefinition::create('image')
       ->setLabel(t('Logo Overlay Image'))
-      //->setRevisionable(TRUE)
       ->setSettings([
         'file_extensions' => 'png gif',
         'file_directory' => '[random:hash:md5]',
@@ -1551,11 +1535,13 @@ class BrightcoveVideo extends BrightcoveVideoPlaylistCMSEntity implements Bright
         'alt_field_required' => FALSE,
       ])
       ->setDisplayOptions('form', [
-        'type' => 'hidden', // Usable default: image_image.
+        // Usable default type: image_image.
+        'type' => 'hidden',
         'weight' => ++$weight,
       ])
       ->setDisplayOptions('view', [
-        'type' => 'hidden', // Usable default: image.
+        // Usable default type: image.
+        'type' => 'hidden',
         'label' => 'above',
         'weight' => $weight,
       ])
@@ -1565,17 +1551,18 @@ class BrightcoveVideo extends BrightcoveVideoPlaylistCMSEntity implements Bright
     // FIXME: Couldn't find this on the Brightcove UI: https://studio.brightcove.com/products/videocloud/media/videos/4585854207001
     $fields['logo_tooltip'] = BaseFieldDefinition::create('string')
       ->setLabel(t('Logo Overlay Tooltip'))
-      //->setRevisionable(TRUE)
       ->setSettings([
         'max_length' => 128,
         'text_processing' => 0,
       ])
       ->setDisplayOptions('form', [
-        'type' => 'hidden', // Usable default: string_textfield.
+        // Usable default type: string_textfield.
+        'type' => 'hidden',
         'weight' => ++$weight,
       ])
       ->setDisplayOptions('view', [
-        'type' => 'hidden', // Usable default: string.
+        // Usable default type: string.
+        'type' => 'hidden',
         'label' => 'inline',
         'weight' => $weight,
       ])
@@ -1584,18 +1571,19 @@ class BrightcoveVideo extends BrightcoveVideoPlaylistCMSEntity implements Bright
 
     $fields['logo_url'] = BaseFieldDefinition::create('link')
       ->setLabel(t('Logo Overlay URL'))
-      //->setRevisionable(TRUE)
       ->setSettings([
         'max_length' => 128,
         'link_type' => LinkItemInterface::LINK_GENERIC,
         'title' => DRUPAL_DISABLED,
       ])
       ->setDisplayOptions('form', [
-        'type' => 'hidden', // Usable default: link_default.
+        // Usable default type: link_default.
+        'type' => 'hidden',
         'weight' => ++$weight,
       ])
       ->setDisplayOptions('view', [
-        'type' => 'hidden', // Usable default: link.
+        // Usable default type: link.
+        'type' => 'hidden',
         'label' => 'inline',
         'weight' => $weight,
         'settings' => [
@@ -1610,17 +1598,18 @@ class BrightcoveVideo extends BrightcoveVideoPlaylistCMSEntity implements Bright
     $fields['bumper_video'] = BaseFieldDefinition::create('file')
       ->setLabel(t('Bumper Video'))
       ->setDescription(t('FLV or H264 video file to playback before the Video content'))
-      //->setRevisionable(TRUE)
       ->setSettings([
         'file_extensions' => 'flv',
         'file_directory' => '[random:hash:md5]',
       ])
       ->setDisplayOptions('form', [
-        'type' => 'hidden', // Usable default: file_generic.
+        // Usable default type: file_generic.
+        'type' => 'hidden',
         'weight' => ++$weight,
       ])
       ->setDisplayOptions('view', [
-        'type' => 'hidden', // Usable default: file_url_plain.
+        // Usable default type: file_url_plain.
+        'type' => 'hidden',
         'label' => 'inline',
         'weight' => $weight,
       ])
@@ -1631,17 +1620,18 @@ class BrightcoveVideo extends BrightcoveVideoPlaylistCMSEntity implements Bright
     $fields['viral'] = BaseFieldDefinition::create('boolean')
       ->setLabel(t('Viral Distribution'))
       ->setDescription(t('Enables the get code and blogging menu options for the video'))
-      //->setRevisionable(TRUE)
       ->setDefaultValue(FALSE)
       ->setDisplayOptions('form', [
-        'type' => 'hidden', // Usable default: boolean_checkbox.
+        // Usable default type: boolean_checkbox.
+        'type' => 'hidden',
         'weight' => ++$weight,
         'settings' => [
           'display_label' => TRUE,
         ],
       ])
       ->setDisplayOptions('view', [
-        'type' => 'hidden', // Usable default: string.
+        // Usable default type: string.
+        'type' => 'hidden',
         'label' => 'inline',
         'weight' => $weight,
       ])
@@ -1679,7 +1669,7 @@ class BrightcoveVideo extends BrightcoveVideoPlaylistCMSEntity implements Bright
         try {
           if (!is_null($api_client_entity)) {
             $client = $api_client_entity->getClient();
-            $json = $client->request('GET', 'ingestion', $api_client_entity->getAccountID(), '/profiles', NULL);
+            $json = $client->request('GET', 'ingestion', $api_client_entity->getAccountId(), '/profiles', NULL);
 
             foreach ($json as $profile) {
               $profiles[$profile['id']] = $profile['name'];
@@ -1741,7 +1731,7 @@ class BrightcoveVideo extends BrightcoveVideoPlaylistCMSEntity implements Bright
       }
       // Otherwise just return the results for the given api client.
       else {
-        $profiles = self::getProfileAllowedValues($entity->getAPIClient());
+        $profiles = self::getProfileAllowedValues($entity->getApiClient());
       }
     }
 
@@ -1755,11 +1745,11 @@ class BrightcoveVideo extends BrightcoveVideoPlaylistCMSEntity implements Bright
    *   Brightcove Video object.
    * @param \Drupal\Core\Entity\EntityStorageInterface $storage
    *   EntityStorage.
-   * @param int|NULL $api_client_id
+   * @param int|null $api_client_id
    *   The ID of the BrightcoveAPIClient entity.
    *
-   * @return int
-   *   The saved BrightcoveVideo entity ID.
+   * @return \Drupal\brightcove\Entity\BrightcoveVideo|null
+   *   The saved BrightcoveVideo entity.
    *
    * @throws \Exception
    *   If BrightcoveAPIClient ID is missing when a new entity is being created.
@@ -1856,7 +1846,7 @@ class BrightcoveVideo extends BrightcoveVideoPlaylistCMSEntity implements Bright
         $related_link['uri'] = $link->getUrl();
         $related_link['title'] = $link->getText();
       }
-      else if (!empty($related_link_field) && !empty($link)) {
+      elseif (!empty($related_link_field) && !empty($link)) {
         if ($related_link_field['uri'] != ($url = $link->getUrl())) {
           $related_link['uri'] = $url;
         }
@@ -1883,8 +1873,8 @@ class BrightcoveVideo extends BrightcoveVideoPlaylistCMSEntity implements Bright
       }
 
       // Save or update reference ID field if needed.
-      if ($video_entity->getReferenceID() != ($reference_id = $video->getReferenceId())) {
-        $video_entity->setReferenceID($reference_id);
+      if ($video_entity->getReferenceId() != ($reference_id = $video->getReferenceId())) {
+        $video_entity->setReferenceId($reference_id);
       }
 
       // Save or update custom field values.
@@ -1921,4 +1911,5 @@ class BrightcoveVideo extends BrightcoveVideoPlaylistCMSEntity implements Bright
 
     return $video_entity;
   }
+
 }

@@ -76,14 +76,14 @@ class BrightcoveTextTrack extends ContentEntityBase implements BrightcoveTextTra
   /**
    * {@inheritdoc}
    */
-  public function getWebVTTFile() {
+  public function getWebVttFile() {
     return $this->get('webvtt_file')->getValue();
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setWebVTTFile($file) {
+  public function setWebVttFile(array $file) {
     return $this->set('webvtt_file', $file);
   }
 
@@ -195,7 +195,7 @@ class BrightcoveTextTrack extends ContentEntityBase implements BrightcoveTextTra
   /**
    * {@inheritdoc}
    */
-  public function setSources($sources) {
+  public function setSources(array $sources) {
     return $this->set('sources', $sources);
   }
 
@@ -211,7 +211,7 @@ class BrightcoveTextTrack extends ContentEntityBase implements BrightcoveTextTra
    */
   public function setDefault($default) {
     // @TODO: Do some magic here to ensure only one default text track per
-    //        video.
+    // video.
     return $this->set('default_text_track', $default);
   }
 
@@ -303,7 +303,6 @@ class BrightcoveTextTrack extends ContentEntityBase implements BrightcoveTextTra
     $fields['name'] = BaseFieldDefinition::create('string')
       ->setLabel(t('Name'))
       ->setDescription(t('Generated name for the Text Track.'))
-      //->setRevisionable(TRUE)
       ->setRequired(TRUE);
 
     $fields['uuid'] = BaseFieldDefinition::create('uuid')
@@ -325,7 +324,6 @@ class BrightcoveTextTrack extends ContentEntityBase implements BrightcoveTextTra
     $fields['webvtt_file'] = BaseFieldDefinition::create('file')
       ->setLabel(t('WebVTT file'))
       ->setRequired(TRUE)
-      //->setRevisionable(TRUE)
       ->setSettings([
         'file_extensions' => 'vtt',
         'file_directory' => '[random:hash:md5]',
@@ -345,7 +343,6 @@ class BrightcoveTextTrack extends ContentEntityBase implements BrightcoveTextTra
     $fields['source'] = BaseFieldDefinition::create('link')
       ->setLabel(t('Source'))
       ->setDescription(t('Source text track.'))
-      //->setRevisionable(TRUE)
       ->setSettings([
         'max_length' => 500,
         'link_type' => LinkItemInterface::LINK_GENERIC,
@@ -364,7 +361,6 @@ class BrightcoveTextTrack extends ContentEntityBase implements BrightcoveTextTra
 
     $fields['source_language'] = BaseFieldDefinition::create('string')
       ->setLabel(t('Language'))
-      //->setRevisionable(TRUE)
       ->setDescription(t('ISO-639-1 language code with optional ISO-3166 country name (en, en-US, de, de-DE).'))
       ->setRequired(TRUE)
       ->setSettings([
@@ -406,7 +402,6 @@ class BrightcoveTextTrack extends ContentEntityBase implements BrightcoveTextTra
     $fields['kind'] = BaseFieldDefinition::create('list_string')
       ->setLabel(t('Kind'))
       ->setDescription(t('How the vtt file is meant to be used.'))
-      //->setRevisionable(TRUE)
       ->setRequired(TRUE)
       ->setDefaultValue(self::KIND_CAPTIONS)
       ->setSetting('allowed_values', [
@@ -454,7 +449,6 @@ class BrightcoveTextTrack extends ContentEntityBase implements BrightcoveTextTra
       ->setLabel(t('Sources'))
       ->setDescription(t('Address of the track file(s).'))
       ->setCardinality(FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED)
-      //->setRevisionable(TRUE)
       ->setSettings([
         'max_length' => 500,
         'link_type' => LinkItemInterface::LINK_GENERIC,
@@ -474,7 +468,6 @@ class BrightcoveTextTrack extends ContentEntityBase implements BrightcoveTextTra
     $fields['default_text_track'] = BaseFieldDefinition::create('boolean')
       ->setLabel(t('Default'))
       ->setDescription(t('Setting this to true makes this the default captions file in the player menu.'))
-//      ->setRevisionable(TRUE)
       ->setDefaultValue(FALSE)
       ->setSettings([
         'on_label' => t('Yes'),
@@ -503,7 +496,6 @@ class BrightcoveTextTrack extends ContentEntityBase implements BrightcoveTextTra
     $fields['uid'] = BaseFieldDefinition::create('entity_reference')
       ->setLabel(t('Authored by'))
       ->setDescription(t('The username of the Brightcove Playlist author.'))
-      //->setRevisionable(TRUE)
       ->setSetting('target_type', 'user')
       ->setDefaultValueCallback(self::class . '::getCurrentUserId')
       ->setTranslatable(TRUE)
@@ -554,9 +546,6 @@ class BrightcoveTextTrack extends ContentEntityBase implements BrightcoveTextTra
    *   EntityStorage.
    * @param int $video_entity_id
    *   The ID of the BrightcoveVideo entity.
-   *
-   * @return \Drupal\brightcove\Entity\BrightcoveTextTrack
-   *   Created or update text track entity.
    *
    * @throws \Exception
    *   If BrightcoveVideo ID is missing when a new entity is being created or
@@ -707,7 +696,7 @@ class BrightcoveTextTrack extends ContentEntityBase implements BrightcoveTextTra
    * @param string $id
    *   The ID of the Text Track provided by Brightcove.
    *
-   * @return \Drupal\brightcove\BrightcoveTextTrackInterface|NULL
+   * @return \Drupal\brightcove\BrightcoveTextTrackInterface|null
    *   The loaded Text Track entity.
    */
   public static function loadByTextTrackId($id) {
@@ -723,4 +712,5 @@ class BrightcoveTextTrack extends ContentEntityBase implements BrightcoveTextTra
 
     return self::load($entity_id);
   }
+
 }

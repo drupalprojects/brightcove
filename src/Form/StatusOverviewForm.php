@@ -56,7 +56,7 @@ class StatusOverviewForm extends FormBase {
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
     return new static(
@@ -122,7 +122,8 @@ class StatusOverviewForm extends FormBase {
       $form['queues']['#rows'][$queue] = [
         $title,
         $counts[$queue],
-        $this->queueFactory->get("brightcove_{$queue}_queue_worker")->numberOfItems(),
+        $this->queueFactory->get("brightcove_{$queue}_queue_worker")
+          ->numberOfItems(),
       ];
     }
 
@@ -176,43 +177,107 @@ class StatusOverviewForm extends FormBase {
           //   before pulling videos.
           // - Text tracks have to be deleted before videos are pulled or
           //   deleted.
-          $batch_operations[] = [[$util_class, 'runQueue'], ['brightcove_client_queue_worker']];
-          $batch_operations[] = [[$util_class, 'runQueue'], ['brightcove_player_queue_worker']];
-          $batch_operations[] = [[$util_class, 'runQueue'], ['brightcove_player_delete_queue_worker']];
-          $batch_operations[] = [[$util_class, 'runQueue'], ['brightcove_custom_field_queue_worker']];
-          $batch_operations[] = [[$util_class, 'runQueue'], ['brightcove_custom_field_delete_queue_worker']];
-          $batch_operations[] = [[$util_class, 'runQueue'], ['brightcove_video_page_queue_worker']];
-          $batch_operations[] = [[$util_class, 'runQueue'], ['brightcove_video_queue_worker']];
-          $batch_operations[] = [[$util_class, 'runQueue'], ['brightcove_text_track_queue_worker']];
-          $batch_operations[] = [[$util_class, 'runQueue'], ['brightcove_text_track_delete_queue_worker']];
-          $batch_operations[] = [[$util_class, 'runQueue'], ['brightcove_playlist_page_queue_worker']];
-          $batch_operations[] = [[$util_class, 'runQueue'], ['brightcove_playlist_queue_worker']];
-          $batch_operations[] = [[$util_class, 'runQueue'], ['brightcove_video_delete_queue_worker']];
-          $batch_operations[] = [[$util_class, 'runQueue'], ['brightcove_playlist_delete_queue_worker']];
-          $batch_operations[] = [[$util_class, 'runQueue'], ['brightcove_subscriptions_queue_worker']];
-          $batch_operations[] = [[$util_class, 'runQueue'], ['brightcove_subscription_queue_worker']];
-          $batch_operations[] = [[$util_class, 'runQueue'], ['brightcove_subscription_delete_queue_worker']];
+          $batch_operations[] = [
+            [$util_class, 'runQueue'], ['brightcove_client_queue_worker'],
+          ];
+          $batch_operations[] = [
+            [$util_class, 'runQueue'], ['brightcove_player_queue_worker'],
+          ];
+          $batch_operations[] = [
+            [$util_class, 'runQueue'], ['brightcove_player_delete_queue_worker'],
+          ];
+          $batch_operations[] = [
+            [$util_class, 'runQueue'], ['brightcove_custom_field_queue_worker'],
+          ];
+          $batch_operations[] = [
+            [$util_class, 'runQueue'], ['brightcove_custom_field_delete_queue_worker'],
+          ];
+          $batch_operations[] = [
+            [$util_class, 'runQueue'], ['brightcove_video_page_queue_worker'],
+          ];
+          $batch_operations[] = [
+            [$util_class, 'runQueue'], ['brightcove_video_queue_worker'],
+          ];
+          $batch_operations[] = [
+            [$util_class, 'runQueue'], ['brightcove_text_track_queue_worker'],
+          ];
+          $batch_operations[] = [
+            [$util_class, 'runQueue'], ['brightcove_text_track_delete_queue_worker'],
+          ];
+          $batch_operations[] = [
+            [$util_class, 'runQueue'], ['brightcove_playlist_page_queue_worker'],
+          ];
+          $batch_operations[] = [
+            [$util_class, 'runQueue'], ['brightcove_playlist_queue_worker'],
+          ];
+          $batch_operations[] = [
+            [$util_class, 'runQueue'], ['brightcove_video_delete_queue_worker'],
+          ];
+          $batch_operations[] = [
+            [$util_class, 'runQueue'], ['brightcove_playlist_delete_queue_worker'],
+          ];
+          $batch_operations[] = [
+            [$util_class, 'runQueue'], ['brightcove_subscriptions_queue_worker'],
+          ];
+          $batch_operations[] = [
+            [$util_class, 'runQueue'], ['brightcove_subscription_queue_worker'],
+          ];
+          $batch_operations[] = [
+            [$util_class, 'runQueue'], ['brightcove_subscription_delete_queue_worker'],
+          ];
           break;
 
         case 'clear':
           // The order shouldn't really matter for clearing the queues, but we
           // are repeating the order from above for the sake of consistency.
-          $batch_operations[] = [[self::class, 'clearQueue'], ['brightcove_client_queue_worker']];
-          $batch_operations[] = [[self::class, 'clearQueue'], ['brightcove_player_queue_worker']];
-          $batch_operations[] = [[self::class, 'clearQueue'], ['brightcove_player_delete_queue_worker']];
-          $batch_operations[] = [[self::class, 'clearQueue'], ['brightcove_custom_field_queue_worker']];
-          $batch_operations[] = [[self::class, 'clearQueue'], ['brightcove_custom_field_delete_queue_worker']];
-          $batch_operations[] = [[self::class, 'clearQueue'], ['brightcove_video_page_queue_worker']];
-          $batch_operations[] = [[self::class, 'clearQueue'], ['brightcove_video_queue_worker']];
-          $batch_operations[] = [[self::class, 'clearQueue'], ['brightcove_text_track_queue_worker']];
-          $batch_operations[] = [[self::class, 'clearQueue'], ['brightcove_text_track_delete_queue_worker']];
-          $batch_operations[] = [[self::class, 'clearQueue'], ['brightcove_playlist_page_queue_worker']];
-          $batch_operations[] = [[self::class, 'clearQueue'], ['brightcove_playlist_queue_worker']];
-          $batch_operations[] = [[self::class, 'clearQueue'], ['brightcove_video_delete_queue_worker']];
-          $batch_operations[] = [[self::class, 'clearQueue'], ['brightcove_playlist_delete_queue_worker']];
-          $batch_operations[] = [[self::class, 'clearQueue'], ['brightcove_subscriptions_queue_worker']];
-          $batch_operations[] = [[self::class, 'clearQueue'], ['brightcove_subscription_queue_worker']];
-          $batch_operations[] = [[self::class, 'clearQueue'], ['brightcove_subscription_delete_queue_worker']];
+          $batch_operations[] = [
+            [self::class, 'clearQueue'], ['brightcove_client_queue_worker'],
+          ];
+          $batch_operations[] = [
+            [self::class, 'clearQueue'], ['brightcove_player_queue_worker'],
+          ];
+          $batch_operations[] = [
+            [self::class, 'clearQueue'], ['brightcove_player_delete_queue_worker'],
+          ];
+          $batch_operations[] = [
+            [self::class, 'clearQueue'], ['brightcove_custom_field_queue_worker'],
+          ];
+          $batch_operations[] = [
+            [self::class, 'clearQueue'], ['brightcove_custom_field_delete_queue_worker'],
+          ];
+          $batch_operations[] = [
+            [self::class, 'clearQueue'], ['brightcove_video_page_queue_worker'],
+          ];
+          $batch_operations[] = [
+            [self::class, 'clearQueue'], ['brightcove_video_queue_worker'],
+          ];
+          $batch_operations[] = [
+            [self::class, 'clearQueue'], ['brightcove_text_track_queue_worker'],
+          ];
+          $batch_operations[] = [
+            [self::class, 'clearQueue'], ['brightcove_text_track_delete_queue_worker'],
+          ];
+          $batch_operations[] = [
+            [self::class, 'clearQueue'], ['brightcove_playlist_page_queue_worker'],
+          ];
+          $batch_operations[] = [
+            [self::class, 'clearQueue'], ['brightcove_playlist_queue_worker'],
+          ];
+          $batch_operations[] = [
+            [self::class, 'clearQueue'], ['brightcove_video_delete_queue_worker'],
+          ];
+          $batch_operations[] = [
+            [self::class, 'clearQueue'], ['brightcove_playlist_delete_queue_worker'],
+          ];
+          $batch_operations[] = [
+            [self::class, 'clearQueue'], ['brightcove_subscriptions_queue_worker'],
+          ];
+          $batch_operations[] = [
+            [self::class, 'clearQueue'], ['brightcove_subscription_queue_worker'],
+          ];
+          $batch_operations[] = [
+            [self::class, 'clearQueue'], ['brightcove_subscription_delete_queue_worker'],
+          ];
           break;
       }
 
@@ -239,7 +304,7 @@ class StatusOverviewForm extends FormBase {
   /**
    * Clears a queue.
    *
-   * @param $queue
+   * @param string $queue
    *   The queue name to clear.
    */
   public static function clearQueue($queue) {
@@ -247,4 +312,5 @@ class StatusOverviewForm extends FormBase {
     // use dependency injection here.
     \Drupal::queue($queue)->deleteQueue();
   }
+
 }

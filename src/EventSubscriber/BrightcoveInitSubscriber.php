@@ -8,14 +8,17 @@ use Symfony\Component\HttpKernel\Event\GetResponseEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
- * Class BrightcoveInitSubscriber
+ * Class BrightcoveInitSubscriber.
+ *
  * @package Drupal\brightcove_proxy\EventSubscriber
  */
 class BrightcoveInitSubscriber implements EventSubscriberInterface {
+
   /**
    * Initialize Brightcove client proxy.
    *
    * @param \Symfony\Component\HttpKernel\Event\GetResponseEvent $event
+   *   GET response event.
    */
   public function initializeBrightcoveClient(GetResponseEvent $event) {
     Client::$consumer = 'Drupal/' . \Drupal::VERSION . ' Brightcove/' . (system_get_info('module', 'brightcove')['version'] ?: 'dev');
@@ -28,4 +31,5 @@ class BrightcoveInitSubscriber implements EventSubscriberInterface {
     $events[KernelEvents::REQUEST][] = ['initializeBrightcoveClient'];
     return $events;
   }
+
 }

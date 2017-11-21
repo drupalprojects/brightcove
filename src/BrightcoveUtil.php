@@ -23,28 +23,28 @@ class BrightcoveUtil {
    *
    * @var \Drupal\brightcove\Entity\BrightcoveAPIClient[]
    */
-  protected static $api_clients = [];
+  protected static $apiClients = [];
 
   /**
    * Array of CMS objects.
    *
    * @var \Brightcove\API\CMS[]
    */
-  protected static $cms_apis = [];
+  protected static $cmsApis = [];
 
   /**
    * Array of DI objects.
    *
    * @var \Brightcove\API\DI[]
    */
-  protected static $di_apis = [];
+  protected static $diApis = [];
 
   /**
    * Array of PM objects.
    *
    * @var \Brightcove\API\PM[]
    */
-  protected static $pm_apis = [];
+  protected static $pmApis = [];
 
   /**
    * Convert Brightcove date make it digestible by Drupal.
@@ -52,7 +52,7 @@ class BrightcoveUtil {
    * @param string $brightcove_date
    *   Brightcove date format.
    *
-   * @return string|NULL
+   * @return string|null
    *   Drupal date format.
    */
   public static function convertDate($brightcove_date) {
@@ -72,13 +72,13 @@ class BrightcoveUtil {
    * @return \Drupal\brightcove\Entity\BrightcoveAPIClient
    *   Loaded BrightcoveAPIClient object.
    */
-  public static function getAPIClient($entity_id) {
+  public static function getApiClient($entity_id) {
     // Load BrightcoveAPIClient if it wasn't already.
-    if (!isset(self::$api_clients[$entity_id])) {
-      self::$api_clients[$entity_id] = BrightcoveAPIClient::load($entity_id);
+    if (!isset(self::$apiClients[$entity_id])) {
+      self::$apiClients[$entity_id] = BrightcoveAPIClient::load($entity_id);
     }
 
-    return self::$api_clients[$entity_id];
+    return self::$apiClients[$entity_id];
   }
 
   /**
@@ -91,7 +91,7 @@ class BrightcoveUtil {
    *   Loaded Brightcove client.
    */
   public static function getClient($entity_id) {
-    $api_client = self::getAPIClient($entity_id);
+    $api_client = self::getApiClient($entity_id);
     return $api_client->getClient();
   }
 
@@ -104,14 +104,14 @@ class BrightcoveUtil {
    * @return \Brightcove\API\CMS
    *   Initialized Brightcove CMS API.
    */
-  public static function getCMSAPI($entity_id) {
+  public static function getCmsApi($entity_id) {
     // Create new \Brightcove\API\CMS object if it is not exists yet.
-    if (!isset(self::$cms_apis[$entity_id])) {
+    if (!isset(self::$cmsApis[$entity_id])) {
       $client = self::getClient($entity_id);
-      self::$cms_apis[$entity_id] = new CMS($client, self::$api_clients[$entity_id]->getAccountID());
+      self::$cmsApis[$entity_id] = new CMS($client, self::$apiClients[$entity_id]->getAccountId());
     }
 
-    return self::$cms_apis[$entity_id];
+    return self::$cmsApis[$entity_id];
   }
 
   /**
@@ -123,14 +123,14 @@ class BrightcoveUtil {
    * @return \Brightcove\API\DI
    *   Initialized Brightcove CMS API.
    */
-  public static function getDIAPI($entity_id) {
+  public static function getDiApi($entity_id) {
     // Create new \Brightcove\API\DI object if it is not exists yet.
-    if (!isset(self::$di_apis[$entity_id])) {
+    if (!isset(self::$diApis[$entity_id])) {
       $client = self::getClient($entity_id);
-      self::$di_apis[$entity_id] = new DI($client, self::$api_clients[$entity_id]->getAccountID());
+      self::$diApis[$entity_id] = new DI($client, self::$apiClients[$entity_id]->getAccountId());
     }
 
-    return self::$di_apis[$entity_id];
+    return self::$diApis[$entity_id];
   }
 
   /**
@@ -142,14 +142,14 @@ class BrightcoveUtil {
    * @return \Brightcove\API\PM
    *   Initialized Brightcove PM API.
    */
-  public static function getPMAPI($entity_id) {
+  public static function getPmApi($entity_id) {
     // Create new \Brightcove\API\PM object if it is not exists yet.
-    if (!isset(self::$pm_apis[$entity_id])) {
+    if (!isset(self::$pmApis[$entity_id])) {
       $client = self::getClient($entity_id);
-      self::$pm_apis[$entity_id] = new PM($client, self::$api_clients[$entity_id]->getAccountID());
+      self::$pmApis[$entity_id] = new PM($client, self::$apiClients[$entity_id]->getAccountId());
     }
 
-    return self::$pm_apis[$entity_id];
+    return self::$pmApis[$entity_id];
   }
 
   /**
@@ -167,10 +167,10 @@ class BrightcoveUtil {
    *   If the version for the given entity is cannot be checked.
    */
   public static function checkUpdatedVersion(BrightcoveCMSEntityInterface $entity) {
-    $client = self::getClient($entity->getAPIClient());
+    $client = self::getClient($entity->getApiClient());
 
     if (!is_null($client)) {
-      $cms = self::getCMSAPI($entity->getAPIClient());
+      $cms = self::getCmsApi($entity->getApiClient());
 
       $entity_type = '';
       try {
@@ -178,7 +178,7 @@ class BrightcoveUtil {
           $entity_type = 'video';
           $cms_entity = $cms->getVideo($entity->getVideoId());
         }
-        else if ($entity instanceof BrightcovePlaylist) {
+        elseif ($entity instanceof BrightcovePlaylist) {
           $entity_type = 'playlist';
           $cms_entity = $cms->getPlaylist($entity->getPlaylistId());
         }
@@ -214,7 +214,7 @@ class BrightcoveUtil {
     }
     else {
       drupal_set_message(t('Brightcove API connection error: :error', [
-        ':error' => self::getAPIClient($entity->getAPIClient())->getClientStatusMessage()
+        ':error' => self::getApiClient($entity->getApiClient())->getClientStatusMessage(),
       ]), 'error');
     }
   }
@@ -222,15 +222,15 @@ class BrightcoveUtil {
   /**
    * Runs a queue.
    *
-   * @param $queue
+   * @param string $queue
    *   The queue name to clear.
-   * @param &$context
+   * @param array &$context
    *   The Batch API context.
    */
-  public static function runQueue($queue, &$context) {
+  public static function runQueue($queue, array &$context) {
     // This is a static function called by Batch API, so it's not possible to
     // use dependency injection here.
-    /** @var QueueWorkerInterface $queue_worker */
+    /* @var \Drupal\Core\Queue\QueueWorkerInterface $queue_worker */
     $queue_worker = \Drupal::getContainer()->get('plugin.manager.queue_worker')->createInstance($queue);
     $queue = \Drupal::queue($queue);
 
@@ -248,7 +248,7 @@ class BrightcoveUtil {
         $handled_all = FALSE;
         break;
       }
-      catch(APIException $e) {
+      catch (APIException $e) {
         if ($e->getCode() == 401) {
           $queue->deleteItem($item);
           $handled_all = TRUE;
@@ -291,7 +291,7 @@ class BrightcoveUtil {
       return BrightcovePlayer::load($player)->getPlayerId();
     }
 
-    $api_client = self::getAPIClient($entity->getAPIClient());
+    $api_client = self::getApiClient($entity->getApiClient());
     return $api_client->getDefaultPlayer();
   }
 

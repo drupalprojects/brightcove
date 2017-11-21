@@ -2,7 +2,13 @@
 
 namespace Drupal\brightcove;
 
+/**
+ * Interface BrightcoveCustomFieldInterface.
+ *
+ * @package Drupal\brightcove
+ */
 interface BrightcoveCustomFieldInterface {
+
   /**
    * Returns the Brightcove ID of the Custom Field.
    *
@@ -39,7 +45,7 @@ interface BrightcoveCustomFieldInterface {
    * @return \Drupal\brightcove\BrightcoveCustomFieldInterface
    *   The called Brightcove Custom Field.
    */
-  public function setEnumValues($enum_values);
+  public function setEnumValues(array $enum_values);
 
   /**
    * Returns whether the field is set to required or not.
@@ -78,4 +84,5 @@ interface BrightcoveCustomFieldInterface {
    *   The called Brightcove Custom Field.
    */
   public function setType($type);
+
 }

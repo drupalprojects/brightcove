@@ -2,11 +2,10 @@
 
 namespace Drupal\brightcove;
 
-use Drupal\Core\Entity\Entity;
 use Drupal\Core\Entity\EntityStorageInterface;
 
 /**
- * Class EntityChangedFieldsTrait
+ * Class EntityChangedFieldsTrait.
  *
  * @package Drupal\brightcove
  */
@@ -28,7 +27,7 @@ trait EntityChangedFieldsTrait {
   /**
    * Returns whether the field is changed or not.
    *
-   * @param $name
+   * @param string $name
    *   The name of the field on the entity.
    *
    * @return bool
@@ -47,16 +46,20 @@ trait EntityChangedFieldsTrait {
    * Checked if the Entity has a changed field or not.
    *
    * @return bool
+   *   TRUE if if the entity has changed fields, FALSE otherwise.
    */
   public function hasChangedField() {
     return $this->hasChangedField;
   }
 
   /**
-   * Check for updated fields, ideally it should be called from the entity's
-   * preSave() method before the parent's preSave() call.
+   * Check for updated fields.
+   *
+   * Ideally it should be called from the entity's preSave() method before the
+   * parent's preSave() call.
    *
    * @param \Drupal\Core\Entity\EntityStorageInterface $storage
+   *   Entity storage.
    */
   public function checkUpdatedFields(EntityStorageInterface $storage) {
     // Collect object getters.
@@ -74,10 +77,7 @@ trait EntityChangedFieldsTrait {
       $original_entity = $storage->loadUnchanged($this->id());
 
       if ($original_entity->getChangedTime() != $this->getChangedTime()) {
-        /**
-         * @var string $name
-         * @var \Drupal\Core\Field\FieldItemList $field
-         */
+        /** @var \Drupal\Core\Field\FieldItemList $field */
         foreach ($this->getFields() as $name => $field) {
           $getter = $this->getGetterName($name, $methods);
 
@@ -136,4 +136,5 @@ trait EntityChangedFieldsTrait {
 
     return $getter;
   }
+
 }

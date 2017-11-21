@@ -5,7 +5,11 @@ namespace Drupal\brightcove_proxy\Form;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 
+/**
+ * Builds form for the Brightcove Proxy settings.
+ */
 class BrightcoveProxyForm extends ConfigFormBase {
+
   /**
    * {@inheritdoc}
    */
@@ -49,13 +53,13 @@ class BrightcoveProxyForm extends ConfigFormBase {
         '#type' => 'textfield',
         '#title' => $this->t('Username'),
         '#default_value' => $config->get('proxy_username'),
-        '#description' => $this->t('The username to use for the connection to the proxy.')
+        '#description' => $this->t('The username to use for the connection to the proxy.'),
       ],
       'proxy_password' => [
         '#type' => 'textfield',
         '#title' => $this->t('Password'),
         '#default_value' => $config->get('proxy_password'),
-        '#description' => $this->t('The password to use for the connection to the proxy.')
+        '#description' => $this->t('The password to use for the connection to the proxy.'),
       ],
       'proxy_auth' => [
         '#type' => 'select',
@@ -169,4 +173,5 @@ class BrightcoveProxyForm extends ConfigFormBase {
 
     parent::submitForm($form, $form_state);
   }
+
 }

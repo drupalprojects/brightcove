@@ -37,7 +37,7 @@ class BrightcovePlayerDeleteQueueWorker extends QueueWorkerBase implements Conta
    * @param \Drupal\Core\Entity\EntityStorageInterface $storage
    *   The storage object.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityStorageInterface $storage) {
+  public function __construct(array $configuration, $plugin_id, array $plugin_definition, EntityStorageInterface $storage) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->storage = $storage;
   }
@@ -75,4 +75,5 @@ class BrightcovePlayerDeleteQueueWorker extends QueueWorkerBase implements Conta
       }
     }
   }
+
 }

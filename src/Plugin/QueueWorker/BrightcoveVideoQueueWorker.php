@@ -21,6 +21,7 @@ use Drupal\brightcove\Entity\BrightcoveVideo;
  * )
  */
 class BrightcoveVideoQueueWorker extends QueueWorkerBase implements ContainerFactoryPluginInterface {
+
   /**
    * The brightcove_video storage.
    *
@@ -40,14 +41,14 @@ class BrightcoveVideoQueueWorker extends QueueWorkerBase implements ContainerFac
    *
    * @var \Drupal\Core\Queue\QueueInterface
    */
-  protected $text_track_queue;
+  protected $textTrackQueue;
 
   /**
    * The playlist page queue object.
    *
    * @var \Drupal\Core\Queue\QueueInterface
    */
-  protected $text_track_delete_queue;
+  protected $textTrackDeleteQueue;
 
   /**
    * Constructs a new BrightcoveVideoQueueWorker object.
@@ -67,12 +68,12 @@ class BrightcoveVideoQueueWorker extends QueueWorkerBase implements ContainerFac
    * @param \Drupal\Core\Queue\QueueInterface $text_track_delete_queue
    *   Text track delete queue object.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityStorageInterface $storage, Connection $connection, QueueInterface $text_track_queue, QueueInterface $text_track_delete_queue) {
+  public function __construct(array $configuration, $plugin_id, array $plugin_definition, EntityStorageInterface $storage, Connection $connection, QueueInterface $text_track_queue, QueueInterface $text_track_delete_queue) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->storage = $storage;
     $this->connection = $connection;
-    $this->text_track_queue = $text_track_queue;
-    $this->text_track_delete_queue = $text_track_delete_queue;
+    $this->textTrackQueue = $text_track_queue;
+    $this->textTrackDeleteQueue = $text_track_delete_queue;
   }
 
   /**
@@ -122,17 +123,19 @@ class BrightcoveVideoQueueWorker extends QueueWorkerBase implements ContainerFac
         }
 
         // Create new queue item for text track.
-        $this->text_track_queue->createItem([
+        $this->textTrackQueue->createItem([
           'text_track' => $text_track,
           'video_entity_id' => $video_entity->id(),
         ]);
       }
 
-      // Remove existing text tracks which are no longer available on Brightcove.
+      // Remove existing text tracks which are no longer available on
+      // Brightcove.
       foreach (array_keys($existing_text_tracks) as $text_track_id) {
         // Create new delete queue item for text track.
-        $this->text_track_delete_queue->createItem($text_track_id);
+        $this->textTrackDeleteQueue->createItem($text_track_id);
       }
     }
   }
+
 }

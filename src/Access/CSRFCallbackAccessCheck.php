@@ -3,11 +3,14 @@
 namespace Drupal\brightcove\Access;
 
 use Drupal\Core\Access\AccessResult;
-use Drupal\Core\Database\Database;
 use Drupal\Core\Routing\Access\AccessInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 
+/**
+ * Custom CSRF access check callback.
+ */
 class CSRFCallbackAccessCheck implements AccessInterface {
+
   /**
    * Custom access callback.
    *
@@ -21,4 +24,5 @@ class CSRFCallbackAccessCheck implements AccessInterface {
     $token = $route_match->getParameter('token');
     return AccessResult::allowedIf(\Drupal::keyValueExpirable('brightcove_callback')->has($token));
   }
+
 }

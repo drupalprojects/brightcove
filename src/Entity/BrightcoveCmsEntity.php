@@ -12,7 +12,8 @@ use Drupal\user\UserInterface;
 /**
  * Common base class for CMS entities like Video and Playlist.
  */
-abstract class BrightcoveCMSEntity extends ContentEntityBase implements BrightcoveCMSEntityInterface {
+abstract class BrightcoveCmsEntity extends ContentEntityBase implements BrightcoveCMSEntityInterface {
+
   use EntityChangedTrait;
   use EntityChangedFieldsTrait;
 
@@ -34,14 +35,14 @@ abstract class BrightcoveCMSEntity extends ContentEntityBase implements Brightco
   /**
    * {@inheritdoc}
    */
-  public function getAPIClient() {
+  public function getApiClient() {
     return $this->get('api_client')->target_id;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setAPIClient($api_client) {
+  public function setApiClient($api_client) {
     $this->set('api_client', $api_client);
     return $this;
   }
@@ -147,10 +148,10 @@ abstract class BrightcoveCMSEntity extends ContentEntityBase implements Brightco
    *   The status of the entity, if TRUE then published entities will be
    *   returned, otherwise the unpublished entities.
    *
-   * @return \Drupal\brightcove\Entity\BrightcoveCMSEntity[]
+   * @return \Drupal\brightcove\Entity\BrightcoveCmsEntity[]
    *   An array of BrightcoveCMSEntity objects.
    */
-  public static function loadMultipleByAPIClient($api_client, $status = TRUE) {
+  public static function loadMultipleByApiClient($api_client, $status = TRUE) {
     $repository = \Drupal::getContainer()->get('entity_type.repository');
     $entity_ids = \Drupal::entityQuery($repository->getEntityTypeFromClass(get_called_class()))
       ->condition('api_client', $api_client)
@@ -158,4 +159,5 @@ abstract class BrightcoveCMSEntity extends ContentEntityBase implements Brightco
       ->execute();
     return self::loadMultiple($entity_ids);
   }
+
 }

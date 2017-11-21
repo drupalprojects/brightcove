@@ -8,10 +8,11 @@ use Brightcove\Object\Video\Video as BrightcoveAPIWrapperVideo;
  * Override Brightcove API Wrapper's Video class.
  */
 class Video extends BrightcoveAPIWrapperVideo {
+
   /**
    * Override patch request to be able to alter the fields.
    */
-  public function patchJSON() {
+  public function patchJson() {
     $data = parent::patchJSON();
 
     // Remove fields which are not needed to be sent to Brightcove.
@@ -24,4 +25,5 @@ class Video extends BrightcoveAPIWrapperVideo {
 
     return $data;
   }
+
 }

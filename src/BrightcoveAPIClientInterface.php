@@ -38,7 +38,7 @@ interface BrightcoveAPIClientInterface extends ConfigEntityInterface {
    * @return string
    *   The account ID for this API Client.
    */
-  public function getAccountID();
+  public function getAccountId();
 
   /**
    * Returns the API Client ID.
@@ -46,7 +46,7 @@ interface BrightcoveAPIClientInterface extends ConfigEntityInterface {
    * @return string
    *   The client ID for this API Client.
    */
-  public function getClientID();
+  public function getClientId();
 
   /**
    * Returns the API Client default player.
@@ -124,7 +124,7 @@ interface BrightcoveAPIClientInterface extends ConfigEntityInterface {
    *
    * @return $this
    */
-  public function setAccountID($account_id);
+  public function setAccountId($account_id);
 
   /**
    * Sets the API Client ID.
@@ -134,7 +134,7 @@ interface BrightcoveAPIClientInterface extends ConfigEntityInterface {
    *
    * @return $this
    */
-  public function setClientID($client_id);
+  public function setClientId($client_id);
 
   /**
    * Sets the API Client default player.
@@ -171,10 +171,11 @@ interface BrightcoveAPIClientInterface extends ConfigEntityInterface {
   /**
    * Sets the maximum addable custom fields number.
    *
-   * @param $max_custom_fields
+   * @param int $max_custom_fields
    *   The maximum custom fields number.
    *
    * @return $this
    */
   public function setMaxCustomFields($max_custom_fields);
+
 }

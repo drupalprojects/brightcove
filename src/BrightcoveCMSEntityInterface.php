@@ -6,7 +6,13 @@ use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityChangedInterface;
 use Drupal\user\EntityOwnerInterface;
 
+/**
+ * Interface BrightcoveCMSEntityInterface.
+ *
+ * @package Drupal\brightcove
+ */
 interface BrightcoveCMSEntityInterface extends ContentEntityInterface, EntityChangedInterface, EntityOwnerInterface {
+
   /**
    * Gets the Brightcove CMS entity name.
    *
@@ -29,10 +35,10 @@ interface BrightcoveCMSEntityInterface extends ContentEntityInterface, EntityCha
   /**
    * Returns the Brightcove Client API target ID.
    *
-   * return int
+   * @return int
    *   Target ID of the Brightcove Client API.
    */
-  public function getAPIClient();
+  public function getApiClient();
 
   /**
    * Sets the Brightcove Client API target ID.
@@ -43,7 +49,7 @@ interface BrightcoveCMSEntityInterface extends ContentEntityInterface, EntityCha
    * @return \Drupal\brightcove\BrightcoveCMSEntityInterface
    *   The called Brightcove CMS entity.
    */
-  public function setAPIClient($api_client);
+  public function setApiClient($api_client);
 
   /**
    * Returns the description.
@@ -82,4 +88,5 @@ interface BrightcoveCMSEntityInterface extends ContentEntityInterface, EntityCha
    *   The called Brightcove CMS entity.
    */
   public function setCreatedTime($timestamp);
+
 }

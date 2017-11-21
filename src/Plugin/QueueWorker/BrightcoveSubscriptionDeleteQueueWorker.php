@@ -33,7 +33,7 @@ class BrightcoveSubscriptionDeleteQueueWorker extends QueueWorkerBase {
     else {
       // Check the Subscription if it is available on Brightcove or not.
       try {
-        $cms = BrightcoveUtil::getCMSAPI($data['api_client_id']);
+        $cms = BrightcoveUtil::getCmsApi($data['api_client_id']);
         $cms->getSubscription($data['subscription_id']);
       }
       catch (APIException $e) {

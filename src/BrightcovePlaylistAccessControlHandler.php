@@ -13,11 +13,12 @@ use Drupal\Core\Access\AccessResult;
  * @see \Drupal\brightcove\Entity\BrightcovePlaylist.
  */
 class BrightcovePlaylistAccessControlHandler extends EntityAccessControlHandler {
+
   /**
    * {@inheritdoc}
    */
   protected function checkAccess(EntityInterface $entity, $operation, AccountInterface $account) {
-    /** @var \Drupal\brightcove\BrightcovePlaylistInterface $entity */
+    /* @var \Drupal\brightcove\BrightcovePlaylistInterface $entity */
     switch ($operation) {
       case 'view':
         if (!$entity->isPublished()) {

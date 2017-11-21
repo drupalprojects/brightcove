@@ -40,9 +40,13 @@ class BrightcoveVideoListBuilder extends EntityListBuilder {
    * Constructor.
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+   *   Entity type.
    * @param \Drupal\Core\Entity\EntityStorageInterface $storage
+   *   Entity storage.
    * @param \Drupal\Core\Session\AccountProxy $account_proxy
+   *   Account proxy.
    * @param \Drupal\Core\Datetime\DateFormatter $date_formatter
+   *   Date formatter.
    */
   public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, AccountProxy $account_proxy, DateFormatter $date_formatter) {
     parent::__construct($entity_type, $storage);
@@ -141,7 +145,7 @@ class BrightcoveVideoListBuilder extends EntityListBuilder {
       'name' => $name,
       'status' => $entity->isPublished() ? $this->t('Active') : $this->t('Inactive'),
       'updated' => $this->dateFormatter->format($entity->getChangedTime(), 'short'),
-      'reference_id' => $entity->getReferenceID(),
+      'reference_id' => $entity->getReferenceId(),
       'created' => $this->dateFormatter->format($entity->getCreatedTime(), 'short'),
     ];
 
@@ -152,4 +156,5 @@ class BrightcoveVideoListBuilder extends EntityListBuilder {
 
     return $row;
   }
+
 }

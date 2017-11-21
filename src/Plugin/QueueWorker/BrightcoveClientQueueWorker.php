@@ -20,47 +20,48 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * )
  */
 class BrightcoveClientQueueWorker extends QueueWorkerBase implements ContainerFactoryPluginInterface {
+
   /**
    * The video page queue object.
    *
    * @var \Drupal\Core\Queue\QueueInterface
    */
-  protected $video_page_queue;
+  protected $videoPageQueue;
 
   /**
    * The playlist page queue object.
    *
    * @var \Drupal\Core\Queue\QueueInterface
    */
-  protected $playlist_page_queue;
+  protected $playlistPageQueue;
 
   /**
    * The player queue object.
    *
    * @var \Drupal\Core\Queue\QueueInterface
    */
-  protected $player_queue;
+  protected $playerQueue;
 
   /**
    * The player delete queue object.
    *
    * @var \Drupal\Core\Queue\QueueInterface
    */
-  protected $player_delete_queue;
+  protected $playerDeleteQueue;
 
   /**
    * The custom field queue object.
    *
    * @var \Drupal\Core\Queue\QueueInterface
    */
-  protected $custom_field_queue;
+  protected $customFieldQueue;
 
   /**
    * The custom field delete queue object.
    *
    * @var \Drupal\Core\Queue\QueueInterface
    */
-  protected $custom_field_delete_queue;
+  protected $customFieldDeleteQueue;
 
   /**
    * Constructs a new BrightcoveClientQueueWorker object.
@@ -86,12 +87,12 @@ class BrightcoveClientQueueWorker extends QueueWorkerBase implements ContainerFa
    */
   public function __construct(array $configuration, $plugin_id, array $plugin_definition, QueueInterface $video_page_queue, QueueInterface $playlist_page_queue, QueueInterface $player_queue, QueueInterface $player_delete_queue, QueueInterface $custom_field_queue, QueueInterface $custom_field_delete_queue) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->video_page_queue = $video_page_queue;
-    $this->playlist_page_queue = $playlist_page_queue;
-    $this->player_queue = $player_queue;
-    $this->player_delete_queue = $player_delete_queue;
-    $this->custom_field_queue = $custom_field_queue;
-    $this->custom_field_delete_queue = $custom_field_delete_queue;
+    $this->videoPageQueue = $video_page_queue;
+    $this->playlistPageQueue = $playlist_page_queue;
+    $this->playerQueue = $player_queue;
+    $this->playerDeleteQueue = $player_delete_queue;
+    $this->customFieldQueue = $custom_field_queue;
+    $this->customFieldDeleteQueue = $custom_field_delete_queue;
   }
 
   /**
@@ -115,11 +116,11 @@ class BrightcoveClientQueueWorker extends QueueWorkerBase implements ContainerFa
    * {@inheritdoc}
    */
   public function processItem($data) {
-    $cms = BrightcoveUtil::getCMSAPI($data);
+    $cms = BrightcoveUtil::getCmsApi($data);
     $items_per_page = 100;
 
     // Create queue item for each player.
-    $pm = BrightcoveUtil::getPMAPI($data);
+    $pm = BrightcoveUtil::getPmApi($data);
     $player_list = $pm->listPlayers();
     $players = [];
     if (!empty($player_list)) {
@@ -131,7 +132,7 @@ class BrightcoveClientQueueWorker extends QueueWorkerBase implements ContainerFa
       unset($player_entities[$player->getId()]);
 
       // Create queue item.
-      $this->player_queue->createItem([
+      $this->playerQueue->createItem([
         'api_client_id' => $data,
         'player' => $player,
       ]);
@@ -139,7 +140,7 @@ class BrightcoveClientQueueWorker extends QueueWorkerBase implements ContainerFa
     // Remove non-existing players.
     foreach (array_keys($player_entities) as $player_id) {
       // Create queue item for deletion.
-      $this->player_delete_queue->createItem(['player_id' => $player_id]);
+      $this->playerDeleteQueue->createItem(['player_id' => $player_id]);
     }
 
     /** @var \Brightcove\Object\CustomFields $video_fields */
@@ -149,16 +150,16 @@ class BrightcoveClientQueueWorker extends QueueWorkerBase implements ContainerFa
     foreach ($video_fields->getCustomFields() as $custom_field) {
       $custom_fields[] = $custom_field->getId();
       // Create queue item.
-      $this->custom_field_queue->createItem([
+      $this->customFieldQueue->createItem([
         'api_client_id' => $data,
         'custom_field' => $custom_field,
       ]);
     }
     // Collect non-existing custom fields and delete them.
-    $custom_field_entities = BrightcoveCustomField::loadMultipleByAPIClient($data);
+    $custom_field_entities = BrightcoveCustomField::loadMultipleByApiClient($data);
     foreach ($custom_field_entities as $custom_field_entity) {
       if (!in_array($custom_field_entity->getCustomFieldId(), $custom_fields)) {
-        $this->custom_field_delete_queue->createItem($custom_field_entity);
+        $this->customFieldDeleteQueue->createItem($custom_field_entity);
       }
     }
 
@@ -166,7 +167,7 @@ class BrightcoveClientQueueWorker extends QueueWorkerBase implements ContainerFa
     $video_count = $cms->countVideos();
     $page = 0;
     while ($page * $items_per_page < $video_count) {
-      $this->video_page_queue->createItem([
+      $this->videoPageQueue->createItem([
         'api_client_id' => $data,
         'page' => $page,
         'items_per_page' => $items_per_page,
@@ -178,7 +179,7 @@ class BrightcoveClientQueueWorker extends QueueWorkerBase implements ContainerFa
     $playlist_count = $cms->countPlaylists();
     $page = 0;
     while ($page * $items_per_page < $playlist_count) {
-      $this->playlist_page_queue->createItem([
+      $this->playlistPageQueue->createItem([
         'api_client_id' => $data,
         'page' => $page,
         'items_per_page' => $items_per_page,
@@ -186,4 +187,5 @@ class BrightcoveClientQueueWorker extends QueueWorkerBase implements ContainerFa
       $page++;
     }
   }
+
 }

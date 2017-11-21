@@ -76,6 +76,7 @@ interface BrightcovePlaylistInterface {
    *   The condition of the tag search, possible values are:
    *     - TAG_SEARCH_CONTAINS_ONE_OR_MORE
    *     - TAG_SEARCH_CONTAINS_ALL
+   *   .
    *
    * @return \Drupal\brightcove\BrightcovePlaylistInterface
    *   The called Brightcove Playlist.
@@ -93,11 +94,12 @@ interface BrightcovePlaylistInterface {
   /**
    * Sets the playlist's videos.
    *
-   * @param ['target_id' => int][] $videos
-   *   The videos on the playlist.
+   * @param array $videos
+   *   The videos on the playlist. Array of ['target_id' => int] items.
    *
    * @return \Drupal\brightcove\BrightcovePlaylistInterface
    *   The called Brightcove Playlist.
    */
-  public function setVideos($videos);
+  public function setVideos(array $videos);
+
 }

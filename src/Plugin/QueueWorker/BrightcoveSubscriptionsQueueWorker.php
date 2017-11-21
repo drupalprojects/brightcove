@@ -72,7 +72,7 @@ class BrightcoveSubscriptionsQueueWorker extends QueueWorkerBase implements Cont
    * {@inheritdoc}
    */
   public function processItem($data) {
-    $cms = BrightcoveUtil::getCMSAPI($data);
+    $cms = BrightcoveUtil::getCmsApi($data);
     try {
       $subscriptions = $cms->getSubscriptions();
 

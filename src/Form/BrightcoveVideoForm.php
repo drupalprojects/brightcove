@@ -15,6 +15,7 @@ use Drupal\Core\Render\Element;
  * @ingroup brightcove
  */
 class BrightcoveVideoForm extends BrightcoveVideoPlaylistForm {
+
   /**
    * {@inheritdoc}
    */
@@ -23,7 +24,7 @@ class BrightcoveVideoForm extends BrightcoveVideoPlaylistForm {
 
     $form['#attached']['library'][] = 'brightcove/brightcove.video';
 
-    /** @var $entity \Drupal\brightcove\Entity\BrightcoveVideo */
+    /* @var $entity \Drupal\brightcove\Entity\BrightcoveVideo */
     $entity = $this->entity;
 
     // Get api client from the form settings.
@@ -63,7 +64,7 @@ class BrightcoveVideoForm extends BrightcoveVideoPlaylistForm {
 
     // Add pseudo title for status field.
     $form['status']['pseudo_title'] = [
-      '#markup' =>  $this->t('Status'),
+      '#markup' => $this->t('Status'),
       '#prefix' => '<div id="status-pseudo-title">',
       '#suffix' => '</div>',
       '#weight' => -100,
@@ -130,7 +131,7 @@ class BrightcoveVideoForm extends BrightcoveVideoPlaylistForm {
     unset($form['schedule_ends_at']);
 
     /** @var \Drupal\brightcove\Entity\BrightcoveCustomField[] $custom_fields */
-    $custom_fields = BrightcoveCustomField::loadMultipleByAPIClient($api_client);
+    $custom_fields = BrightcoveCustomField::loadMultipleByApiClient($api_client);
 
     // Add ajax wrapper for custom fields.
     if ($entity->isNew()) {
@@ -186,7 +187,7 @@ class BrightcoveVideoForm extends BrightcoveVideoPlaylistForm {
 
           // Add none option if the field is not required.
           if (!$form['custom_fields'][$custom_field_id]['#required']) {
-            $options[''] = $this->t(' - None -');
+            $options[''] = $this->t('- None -');
           }
 
           foreach ($custom_field->getEnumValues() as $enum) {
@@ -213,7 +214,7 @@ class BrightcoveVideoForm extends BrightcoveVideoPlaylistForm {
   public function validateForm(array &$form, FormStateInterface $form_state) {
     parent::validateForm($form, $form_state);
 
-    /** @var $entity \Drupal\brightcove\Entity\BrightcoveVideo */
+    /* @var $entity \Drupal\brightcove\Entity\BrightcoveVideo */
     $entity = $this->entity;
 
     switch ($form_state->getValue('upload_type')) {
@@ -240,7 +241,7 @@ class BrightcoveVideoForm extends BrightcoveVideoPlaylistForm {
    * {@inheritdoc}
    */
   public function save(array $form, FormStateInterface $form_state) {
-    /** @var $entity \Drupal\brightcove\Entity\BrightcoveVideo */
+    /* @var $entity \Drupal\brightcove\Entity\BrightcoveVideo */
     $entity = $this->entity;
 
     try {
@@ -275,14 +276,9 @@ class BrightcoveVideoForm extends BrightcoveVideoPlaylistForm {
   }
 
   /**
-   * Ajax callback to update the profile and player options list.
-   *
-   * @param $form
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *
-   * @return \Drupal\Core\Ajax\AjaxResponse
+   * {@inheritdoc}
    */
-  public static function apiClientUpdateForm($form, FormStateInterface $form_state) {
+  public static function apiClientUpdateForm(array $form, FormStateInterface $form_state) {
     $response = parent::apiClientUpdateForm($form, $form_state);
 
     // Update profile field.
@@ -299,4 +295,5 @@ class BrightcoveVideoForm extends BrightcoveVideoPlaylistForm {
 
     return $response;
   }
+
 }

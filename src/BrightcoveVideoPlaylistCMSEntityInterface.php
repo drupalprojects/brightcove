@@ -2,11 +2,13 @@
 
 namespace Drupal\brightcove;
 
-use Drupal\Core\Entity\ContentEntityInterface;
-use Drupal\Core\Entity\EntityChangedInterface;
-use Drupal\user\EntityOwnerInterface;
-
+/**
+ * Interface BrightcoveVideoPlaylistCMSEntityInterface.
+ *
+ * @package Drupal\brightcove
+ */
 interface BrightcoveVideoPlaylistCMSEntityInterface extends BrightcoveCMSEntityInterface {
+
   /**
    * Returns the player.
    *
@@ -32,7 +34,7 @@ interface BrightcoveVideoPlaylistCMSEntityInterface extends BrightcoveCMSEntityI
    * @return string
    *   Reference ID.
    */
-  public function getReferenceID();
+  public function getReferenceId();
 
   /**
    * Sets the reference ID.
@@ -43,12 +45,12 @@ interface BrightcoveVideoPlaylistCMSEntityInterface extends BrightcoveCMSEntityI
    * @return \Drupal\brightcove\BrightcoveVideoPlaylistCMSEntityInterface
    *   The called Brightcove Video or Playlist.
    */
-  public function setReferenceID($reference_id);
+  public function setReferenceId($reference_id);
 
   /**
    * Returns the tags.
    *
-   * @return string
+   * @return string[]
    *   The list of tags.
    */
   public function getTags();
@@ -62,7 +64,7 @@ interface BrightcoveVideoPlaylistCMSEntityInterface extends BrightcoveCMSEntityI
    * @return \Drupal\brightcove\BrightcoveVideoPlaylistCMSEntityInterface
    *   The called Brightcove Video or Playlist.
    */
-  public function setTags($tags);
+  public function setTags(array $tags);
 
   /**
    * Returns the entity published status indicator.
@@ -84,4 +86,5 @@ interface BrightcoveVideoPlaylistCMSEntityInterface extends BrightcoveCMSEntityI
    *   The called Brightcove Video or Playlist.
    */
   public function setPublished($published);
+
 }

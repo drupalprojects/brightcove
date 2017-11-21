@@ -7,7 +7,8 @@ use Drupal\brightcove\BrightcoveVideoPlaylistCMSEntityInterface;
 /**
  * Common base class for CMS entities like Video and Playlist.
  */
-abstract class BrightcoveVideoPlaylistCMSEntity extends BrightcoveCMSEntity implements BrightcoveVideoPlaylistCMSEntityInterface {
+abstract class BrightcoveVideoPlaylistCmsEntity extends BrightcoveCmsEntity implements BrightcoveVideoPlaylistCMSEntityInterface {
+
   /**
    * {@inheritdoc}
    */
@@ -25,14 +26,14 @@ abstract class BrightcoveVideoPlaylistCMSEntity extends BrightcoveCMSEntity impl
   /**
    * {@inheritdoc}
    */
-  public function getReferenceID() {
+  public function getReferenceId() {
     return $this->get('reference_id')->value;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setReferenceID($reference_id) {
+  public function setReferenceId($reference_id) {
     return $this->set('reference_id', $reference_id);
   }
 
@@ -60,7 +61,7 @@ abstract class BrightcoveVideoPlaylistCMSEntity extends BrightcoveCMSEntity impl
   /**
    * {@inheritdoc}
    */
-  public function setTags($tags) {
+  public function setTags(array $tags) {
     $this->set('tags', $tags);
     return $this;
   }
@@ -78,4 +79,5 @@ abstract class BrightcoveVideoPlaylistCMSEntity extends BrightcoveCMSEntity impl
   public function setPublished($published) {
     return $this->set('status', $published ? NODE_PUBLISHED : NODE_NOT_PUBLISHED);
   }
+
 }

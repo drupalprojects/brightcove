@@ -13,6 +13,7 @@ use Drupal\Core\Access\AccessResult;
  * @see \Drupal\brightcove\Entity\BrightcoveVideo.
  */
 class BrightcoveVideoAccessControlHandler extends EntityAccessControlHandler {
+
   /**
    * {@inheritdoc}
    */

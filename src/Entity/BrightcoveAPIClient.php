@@ -4,7 +4,6 @@ namespace Drupal\brightcove\Entity;
 
 use Brightcove\API\CMS;
 use Brightcove\API\Exception\APIException;
-use Brightcove\API\Exception\AuthenticationException;
 use Drupal\Core\Config\Entity\ConfigEntityBase;
 use Drupal\brightcove\BrightcoveAPIClientInterface;
 use Brightcove\API\Client;
@@ -127,42 +126,42 @@ class BrightcoveAPIClient extends ConfigEntityBase implements BrightcoveAPIClien
   protected $key_value_expirable_store;
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   public function getLabel() {
     return $this->label;
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
-  public function getAccountID() {
+  public function getAccountId() {
     return $this->account_id;
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
-  public function getClientID() {
+  public function getClientId() {
     return $this->client_id;
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   public function getDefaultPlayer() {
     return $this->default_player;
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   public function getSecretKey() {
     return $this->secret_key;
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   public function getClient() {
     $this->authorizeClient();
@@ -170,21 +169,21 @@ class BrightcoveAPIClient extends ConfigEntityBase implements BrightcoveAPIClien
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   public function getClientStatus() {
     return $this->client_status;
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   public function getClientStatusMessage() {
     return $this->client_status_message;
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   public function getAccessToken() {
     return $this->key_value_expirable_store->get($this->client_id, NULL);
@@ -198,7 +197,7 @@ class BrightcoveAPIClient extends ConfigEntityBase implements BrightcoveAPIClien
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   public function setLabel($label) {
     $this->label = $label;
@@ -206,23 +205,23 @@ class BrightcoveAPIClient extends ConfigEntityBase implements BrightcoveAPIClien
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
-  public function setAccountID($account_id) {
+  public function setAccountId($account_id) {
     $this->account_id = $account_id;
     return $this;
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
-  public function setClientID($client_id) {
+  public function setClientId($client_id) {
     $this->client_id = $client_id;
     return $this;
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   public function setDefaultPlayer($default_player) {
     $this->default_player = $default_player;
@@ -230,7 +229,7 @@ class BrightcoveAPIClient extends ConfigEntityBase implements BrightcoveAPIClien
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   public function setSecretKey($secret_key) {
     $this->secret_key = $secret_key;
@@ -251,7 +250,7 @@ class BrightcoveAPIClient extends ConfigEntityBase implements BrightcoveAPIClien
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   public function setAccessToken($access_token, $expire) {
     $this->key_value_expirable_store->setWithExpire($this->client_id, $access_token, $expire);
@@ -280,7 +279,7 @@ class BrightcoveAPIClient extends ConfigEntityBase implements BrightcoveAPIClien
    *
    * @return $this
    *
-   * @throws AuthenticationException|\Exception
+   * @throws \Brightcove\API\Exception\AuthenticationException|\Exception
    *   Re-throw any exception to be able to handle them nicely.
    */
   public function authorizeClient() {
@@ -342,4 +341,5 @@ class BrightcoveAPIClient extends ConfigEntityBase implements BrightcoveAPIClien
 
     return $this;
   }
+
 }

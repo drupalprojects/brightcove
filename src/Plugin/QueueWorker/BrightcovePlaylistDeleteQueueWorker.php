@@ -19,6 +19,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * )
  */
 class BrightcovePlaylistDeleteQueueWorker extends QueueWorkerBase implements ContainerFactoryPluginInterface {
+
   /**
    * The brightcove_playlist storage.
    *
@@ -38,7 +39,7 @@ class BrightcovePlaylistDeleteQueueWorker extends QueueWorkerBase implements Con
    * @param \Drupal\Core\Entity\EntityStorageInterface $storage
    *   Brightcove Playlist Entity storage.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityStorageInterface $storage) {
+  public function __construct(array $configuration, $plugin_id, array $plugin_definition, EntityStorageInterface $storage) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->storage = $storage;
   }
@@ -54,13 +55,14 @@ class BrightcovePlaylistDeleteQueueWorker extends QueueWorkerBase implements Con
       $container->get('entity_type.manager')->getStorage('brightcove_playlist')
     );
   }
+
   /**
    * {@inheritdoc}
    */
   public function processItem($data) {
     // Check the playlist if it is available on Brightcove or not.
     try {
-      $cms = BrightcoveUtil::getCMSAPI($data->api_client);
+      $cms = BrightcoveUtil::getCmsApi($data->api_client);
       $cms->getPlaylist($data->playlist_id);
     }
     catch (APIException $e) {
@@ -77,4 +79,5 @@ class BrightcovePlaylistDeleteQueueWorker extends QueueWorkerBase implements Con
       }
     }
   }
+
 }

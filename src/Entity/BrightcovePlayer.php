@@ -27,7 +27,8 @@ use Drupal\Core\Field\BaseFieldDefinition;
  *   }
  * )
  */
-class BrightcovePlayer extends BrightcoveCMSEntity implements BrightcovePlayerInterface {
+class BrightcovePlayer extends BrightcoveCmsEntity implements BrightcovePlayerInterface {
+
   /**
    * {@inheritdoc}
    */
@@ -102,12 +103,10 @@ class BrightcovePlayer extends BrightcoveCMSEntity implements BrightcovePlayerIn
     $fields['name'] = BaseFieldDefinition::create('string')
       ->setLabel(t('Player name'))
       ->setDescription(t('The name of the Brightcove Player.'));
-      //->setRevisionable(TRUE)
 
     $fields['langcode'] = BaseFieldDefinition::create('language')
       ->setLabel(t('Language code'))
       ->setDescription(t('The language code for the Brightcove Player.'));
-      //->setRevisionable(TRUE)
 
     $fields['api_client'] = BaseFieldDefinition::create('entity_reference')
       ->setLabel(t('API Client'))
@@ -118,7 +117,6 @@ class BrightcovePlayer extends BrightcoveCMSEntity implements BrightcovePlayerIn
     $fields['uid'] = BaseFieldDefinition::create('entity_reference')
       ->setLabel(t('Authored by'))
       ->setDescription(t('The username of the Brightcove Playlist author.'))
-      //->setRevisionable(TRUE)
       ->setSetting('target_type', 'user')
       ->setDefaultValueCallback('Drupal\brightcove\Entity\BrightcovePlayer::getCurrentUserId')
       ->setTranslatable(TRUE);
@@ -126,13 +124,11 @@ class BrightcovePlayer extends BrightcoveCMSEntity implements BrightcovePlayerIn
     $fields['created'] = BaseFieldDefinition::create('created')
       ->setLabel(t('Created'))
       ->setDescription(t('The time that the Brightcove Player was created.'))
-      //->setRevisionable(TRUE)
       ->setTranslatable(TRUE);
 
     $fields['changed'] = BaseFieldDefinition::create('changed')
       ->setLabel(t('Changed'))
       ->setDescription(t('The time that the Brightcove Player was last edited.'))
-      //->setRevisionable(TRUE)
       ->setTranslatable(TRUE);
 
     $fields['player_id'] = BaseFieldDefinition::create('string')
@@ -162,7 +158,7 @@ class BrightcovePlayer extends BrightcoveCMSEntity implements BrightcovePlayerIn
    *   Brightcove Player object.
    * @param \Drupal\Core\Entity\EntityStorageInterface $storage
    *   Player Entity storage.
-   * @param int|NULL $api_client_id
+   * @param int|null $api_client_id
    *   The ID of the BrightcoveAPIClient entity.
    *
    * @throws \Exception
@@ -263,7 +259,7 @@ class BrightcovePlayer extends BrightcoveCMSEntity implements BrightcovePlayerIn
   /**
    * Helper function to load entity by the Brightcove player ID.
    *
-   * @param $player_id
+   * @param string $player_id
    *   The Brightcove ID of the player.
    *
    * @return \Drupal\brightcove\Entity\BrightcovePlayer
@@ -279,7 +275,7 @@ class BrightcovePlayer extends BrightcoveCMSEntity implements BrightcovePlayerIn
   /**
    * Returns a list of players.
    *
-   * @param NULL|array $api_client
+   * @param null|array $api_client
    *   The API Client for which the players should be returned. If it's NULL,
    *   then only the default player will be returned.
    * @param bool $use_entity_id
@@ -315,4 +311,5 @@ class BrightcovePlayer extends BrightcoveCMSEntity implements BrightcovePlayerIn
     }
     return $players;
   }
+
 }

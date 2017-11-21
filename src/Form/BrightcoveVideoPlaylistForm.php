@@ -13,10 +13,9 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Base form controller for Video and Playlist forms.
- *
- * @package Drupal\brightcove\Form
  */
 abstract class BrightcoveVideoPlaylistForm extends ContentEntityForm {
+
   /**
    * The default API Client.
    *
@@ -53,7 +52,7 @@ abstract class BrightcoveVideoPlaylistForm extends ContentEntityForm {
   public function buildForm(array $form, FormStateInterface $form_state) {
     $form = parent::buildForm($form, $form_state);
 
-    /** @var $entity \Drupal\brightcove\Entity\BrightcoveVideoPlaylistCMSEntity */
+    /* @var $entity \Drupal\brightcove\Entity\BrightcoveVideoPlaylistCmsEntity */
     $entity = $this->entity;
     $triggering_element = $form_state->getTriggeringElement();
 
@@ -93,13 +92,15 @@ abstract class BrightcoveVideoPlaylistForm extends ContentEntityForm {
   /**
    * Get the player options for the given api client.
    *
-   * @param $form
+   * @param array $form
+   *   An associative array containing the structure of the form.
    * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The current state of the form.
    *
    * @return array
    *   The list of options for the player selection.
    */
-  protected static function getPlayerOptions($form, FormStateInterface $form_state) {
+  protected static function getPlayerOptions(array $form, FormStateInterface $form_state) {
     if (empty($form_state->getValue('api_client'))) {
       $api_client = $form['api_client']['widget']['#default_value'];
     }
@@ -115,12 +116,15 @@ abstract class BrightcoveVideoPlaylistForm extends ContentEntityForm {
   /**
    * Ajax callback to update the player options list.
    *
-   * @param $form
+   * @param array $form
+   *   An associative array containing the structure of the form.
    * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The current state of the form.
    *
    * @return \Drupal\Core\Ajax\AjaxResponse
+   *   Ajax command response.
    */
-  public static function apiClientUpdateForm($form, FormStateInterface $form_state) {
+  public static function apiClientUpdateForm(array $form, FormStateInterface $form_state) {
     $form['player']['widget']['#options'] = self::getPlayerOptions($form, $form_state);
 
     $response = new AjaxResponse();
@@ -131,4 +135,5 @@ abstract class BrightcoveVideoPlaylistForm extends ContentEntityForm {
 
     return $response;
   }
+
 }

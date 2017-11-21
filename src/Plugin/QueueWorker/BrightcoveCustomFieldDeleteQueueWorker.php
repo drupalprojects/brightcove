@@ -17,6 +17,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * )
  */
 class BrightcoveCustomFieldDeleteQueueWorker extends QueueWorkerBase implements ContainerFactoryPluginInterface {
+
   /**
    * {@inheritdoc}
    */
@@ -45,4 +46,5 @@ class BrightcoveCustomFieldDeleteQueueWorker extends QueueWorkerBase implements 
       }
     }
   }
+
 }

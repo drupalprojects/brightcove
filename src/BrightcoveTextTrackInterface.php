@@ -12,10 +12,12 @@ use Drupal\user\EntityOwnerInterface;
  * @ingroup brightcove
  */
 interface BrightcoveTextTrackInterface extends ContentEntityInterface, EntityChangedInterface, EntityOwnerInterface {
+
   /**
    * Returns the name of Text Track.
    *
    * @return string
+   *   The name of the Text Track.
    */
   public function getName();
 
@@ -36,7 +38,7 @@ interface BrightcoveTextTrackInterface extends ContentEntityInterface, EntityCha
    * @return array
    *   WebVTT file entity.
    */
-  public function getWebVTTFile();
+  public function getWebVttFile();
 
   /**
    * Sets the WebVTT file.
@@ -47,7 +49,7 @@ interface BrightcoveTextTrackInterface extends ContentEntityInterface, EntityCha
    * @return \Drupal\brightcove\BrightcoveTextTrackInterface
    *   The called BrightcoveTextTrack entity.
    */
-  public function setWebVTTFile($file);
+  public function setWebVttFile(array $file);
 
   /**
    * Returns the Brightcove ID of the Text Track.
@@ -79,7 +81,7 @@ interface BrightcoveTextTrackInterface extends ContentEntityInterface, EntityCha
   /**
    * Sets the source link.
    *
-   * @param $source
+   * @param string $source
    *   The related link.
    *
    * @return \Drupal\brightcove\BrightcoveTextTrackInterface
@@ -99,7 +101,7 @@ interface BrightcoveTextTrackInterface extends ContentEntityInterface, EntityCha
    * Sets the source language.
    *
    * @param string $source_language
-   *   2-letter source language, eg.: hu, en.
+   *   A 2-letter source language code, eg.: hu, en.
    *
    * @return \Drupal\brightcove\BrightcoveTextTrackInterface
    *   The called BrightcoveTextTrack entity.
@@ -144,6 +146,7 @@ interface BrightcoveTextTrackInterface extends ContentEntityInterface, EntityCha
    *     - BrightcoveTextTrack::KIND_DESCRIPTION
    *     - BrightcoveTextTrack::KIND_CHAPTERS
    *     - BrightcoveTextTrack::KIND_METADATA
+   *   .
    *
    * @return \Drupal\brightcove\BrightcoveTextTrackInterface
    *   The called BrightcoveTextTrack entity.
@@ -195,9 +198,6 @@ interface BrightcoveTextTrackInterface extends ContentEntityInterface, EntityCha
    *
    * @return array
    *   List of text track sources.
-   *
-   * @return \Drupal\brightcove\BrightcoveTextTrackInterface
-   *   The called BrightcoveTextTrack entity.
    */
   public function getSources();
 
@@ -210,7 +210,7 @@ interface BrightcoveTextTrackInterface extends ContentEntityInterface, EntityCha
    * @return \Drupal\brightcove\BrightcoveTextTrackInterface
    *   The called BrightcoveTextTrack entity.
    */
-  public function setSources($sources);
+  public function setSources(array $sources);
 
   /**
    * Whether or not the text track is default.

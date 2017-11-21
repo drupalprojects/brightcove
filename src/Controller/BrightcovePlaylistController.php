@@ -8,20 +8,26 @@ use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
+/**
+ * Class BrightcovePlaylistController.
+ *
+ * @package Drupal\brightcove\Controller
+ */
 class BrightcovePlaylistController extends ControllerBase {
+
   /**
    * The brightcove_playlist storage.
    *
    * @var \Drupal\Core\Entity\EntityStorageInterface
    */
-  protected $playlist_storage;
+  protected $playlistStorage;
 
   /**
    * The brightcove_video storage.
    *
    * @var \Drupal\Core\Entity\EntityStorageInterface
    */
-  protected $video_storage;
+  protected $videoStorage;
 
   /**
    * Controller constructor.
@@ -30,11 +36,10 @@ class BrightcovePlaylistController extends ControllerBase {
    *   Playlist EntityStorage.
    * @param \Drupal\Core\Entity\EntityStorageInterface $video_storage
    *   Video EntityStorage.
-   *
    */
   public function __construct(EntityStorageInterface $playlist_storage, EntityStorageInterface $video_storage) {
-    $this->playlist_storage = $playlist_storage;
-    $this->video_storage = $video_storage;
+    $this->playlistStorage = $playlist_storage;
+    $this->videoStorage = $video_storage;
   }
 
   /**
@@ -61,12 +66,13 @@ class BrightcovePlaylistController extends ControllerBase {
     $playlist = BrightcovePlaylist::load($entity_id);
 
     /** @var \Brightcove\API\CMS $cms */
-    $cms = BrightcoveUtil::getCMSAPI($playlist->getAPIClient());
+    $cms = BrightcoveUtil::getCmsApi($playlist->getApiClient());
 
     // Update playlist.
-    BrightcovePlaylist::createOrUpdate($cms->getPlaylist($playlist->getPlaylistId()), $this->playlist_storage, $this->video_storage);
+    BrightcovePlaylist::createOrUpdate($cms->getPlaylist($playlist->getPlaylistId()), $this->playlistStorage, $this->videoStorage);
 
     // Redirect back to the playlist edit form.
     return $this->redirect('entity.brightcove_playlist.edit_form', ['brightcove_playlist' => $entity_id]);
   }
+
 }

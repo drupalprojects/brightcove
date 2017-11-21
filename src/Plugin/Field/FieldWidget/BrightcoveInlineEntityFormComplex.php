@@ -22,6 +22,7 @@ use Drupal\inline_entity_form\Plugin\Field\FieldWidget\InlineEntityFormComplex;
  * )
  */
 class BrightcoveInlineEntityFormComplex extends InlineEntityFormComplex {
+
   /**
    * {@inheritdoc}
    */
@@ -35,7 +36,7 @@ class BrightcoveInlineEntityFormComplex extends InlineEntityFormComplex {
       $child_element = &$element['entities'][$key];
       if (!empty($entity->id())) {
         $child_element['#label'] = Link::fromTextAndUrl($child_element['#label'], Url::fromRoute('entity.brightcove_text_track.canonical', [
-          'brightcove_text_track' => $entity->id()
+          'brightcove_text_track' => $entity->id(),
         ]));
       }
     }
@@ -60,4 +61,5 @@ class BrightcoveInlineEntityFormComplex extends InlineEntityFormComplex {
 
     return $parent_element;
   }
+
 }

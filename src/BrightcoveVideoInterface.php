@@ -8,6 +8,7 @@ namespace Drupal\brightcove;
  * @ingroup brightcove
  */
 interface BrightcoveVideoInterface {
+
   /**
    * Brightcove video thumbnail images path.
    */
@@ -58,8 +59,10 @@ interface BrightcoveVideoInterface {
    *
    * @param string $type
    *   The type of the image. Possible values are:
-   *     - IMAGE_TYPE_THUMBNAIL
-   *     - IMAGE_TYPE_POSTER
+   *     - IMAGE_TYPE_THUMBNAIL: Recommended aspect ratio of 16:9 and a minimum
+   *                             width of 640px.
+   *     - IMAGE_TYPE_POSTER: Recommended aspect ratio of 16:9 and a minimum
+   *                          width of 160px.
    * @param \Brightcove\Object\Video\Image|array $image
    *   The image from Brightcove.
    *
@@ -96,7 +99,7 @@ interface BrightcoveVideoInterface {
    * @return int
    *   Target ID of the Brightcove Client API.
    */
-  public function getAPIClient();
+  public function getApiClient();
 
   /**
    * Sets the Brightcove Client API target ID.
@@ -107,7 +110,7 @@ interface BrightcoveVideoInterface {
    * @return \Drupal\brightcove\BrightcoveVideoInterface
    *   The called Brightcove Video.
    */
-  public function setAPIClient($api_client);
+  public function setApiClient($api_client);
 
   /**
    * Returns the Brightcove Video ID.
@@ -177,7 +180,7 @@ interface BrightcoveVideoInterface {
   /**
    * Sets the video's related link.
    *
-   * @param array|NULL $related_link
+   * @param array|null $related_link
    *   The related link.
    *
    * @return \Drupal\brightcove\BrightcoveVideoInterface
@@ -234,7 +237,7 @@ interface BrightcoveVideoInterface {
   /**
    * Sets the video file.
    *
-   * @param array $video_file
+   * @param array|null $video_file
    *   The video file entity.
    *
    * @return \Drupal\brightcove\BrightcoveVideoInterface
@@ -290,7 +293,7 @@ interface BrightcoveVideoInterface {
   /**
    * Sets the video's poster image.
    *
-   * @param array $poster
+   * @param array|null $poster
    *   The poster image which needs to be saved on the entity.
    *
    * @return \Drupal\brightcove\BrightcoveVideoInterface
@@ -309,7 +312,7 @@ interface BrightcoveVideoInterface {
   /**
    * Sets the video's thumbnail image.
    *
-   * @param array $thumbnail
+   * @param array|null $thumbnail
    *   The thumbnail image which needs to be saved on the entity.
    *
    * @return \Drupal\brightcove\BrightcoveVideoInterface
@@ -373,4 +376,5 @@ interface BrightcoveVideoInterface {
    *   The called Brightcove Video.
    */
   public function setScheduleEndsAt($schedule_ends_at);
+
 }

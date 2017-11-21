@@ -19,19 +19,20 @@ use Drupal\Core\Queue\RequeueException;
  * )
  */
 class BrightcovePlaylistQueueWorker extends QueueWorkerBase implements ContainerFactoryPluginInterface {
+
   /**
    * The brightcove_playlist storage.
    *
    * @var \Drupal\Core\Entity\EntityStorageInterface
    */
-  protected $playlist_storage;
+  protected $playlistStorage;
 
   /**
    * The brightcove_video storage.
    *
    * @var \Drupal\Core\Entity\EntityStorageInterface
    */
-  protected $video_storage;
+  protected $videoStorage;
 
   /**
    * Constructs a new BrightcovePlaylistQueueWorker object.
@@ -47,10 +48,10 @@ class BrightcovePlaylistQueueWorker extends QueueWorkerBase implements Container
    * @param \Drupal\Core\Entity\EntityStorageInterface $video_storage
    *   The brightcove_video storage.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityStorageInterface $playlist_storage, EntityStorageInterface $video_storage) {
+  public function __construct(array $configuration, $plugin_id, array $plugin_definition, EntityStorageInterface $playlist_storage, EntityStorageInterface $video_storage) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->playlist_storage = $playlist_storage;
-    $this->video_storage = $video_storage;
+    $this->playlistStorage = $playlist_storage;
+    $this->videoStorage = $video_storage;
   }
 
   /**
@@ -74,10 +75,11 @@ class BrightcovePlaylistQueueWorker extends QueueWorkerBase implements Container
     $playlist = $data['playlist'];
 
     try {
-      BrightcovePlaylist::createOrUpdate($playlist, $this->playlist_storage, $this->video_storage, $data['api_client_id']);
+      BrightcovePlaylist::createOrUpdate($playlist, $this->playlistStorage, $this->videoStorage, $data['api_client_id']);
     }
     catch (\Exception $e) {
       throw new RequeueException($e->getMessage(), $e->getCode(), $e);
     }
   }
+
 }

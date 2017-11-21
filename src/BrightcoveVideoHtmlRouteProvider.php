@@ -9,10 +9,11 @@ use Symfony\Component\Routing\Route;
 /**
  * Provides routes for Brightcove Videos.
  *
- * @see Drupal\Core\Entity\Routing\AdminHtmlRouteProvider
- * @see Drupal\Core\Entity\Routing\DefaultHtmlRouteProvider
+ * @see \Drupal\Core\Entity\Routing\AdminHtmlRouteProvider
+ * @see \Drupal\Core\Entity\Routing\DefaultHtmlRouteProvider
  */
 class BrightcoveVideoHtmlRouteProvider extends AdminHtmlRouteProvider {
+
   /**
    * {@inheritdoc}
    */
@@ -37,13 +38,7 @@ class BrightcoveVideoHtmlRouteProvider extends AdminHtmlRouteProvider {
   }
 
   /**
-   * Gets the collection route.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
-   *   The entity type.
-   *
-   * @return \Symfony\Component\Routing\Route|null
-   *   The generated route, if available.
+   * {@inheritdoc}
    */
   protected function getCollectionRoute(EntityTypeInterface $entity_type) {
     if ($entity_type->hasLinkTemplate('collection') && $entity_type->hasListBuilderClass()) {
@@ -59,16 +54,11 @@ class BrightcoveVideoHtmlRouteProvider extends AdminHtmlRouteProvider {
 
       return $route;
     }
+    return NULL;
   }
 
   /**
-   * Gets the add-form route.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
-   *   The entity type.
-   *
-   * @return \Symfony\Component\Routing\Route|null
-   *   The generated route, if available.
+   * {@inheritdoc}
    */
   protected function getAddFormRoute(EntityTypeInterface $entity_type) {
     if ($entity_type->hasLinkTemplate('add-form')) {
@@ -96,16 +86,11 @@ class BrightcoveVideoHtmlRouteProvider extends AdminHtmlRouteProvider {
 
       return $route;
     }
+    return NULL;
   }
 
   /**
-   * Gets the settings form route.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
-   *   The entity type.
-   *
-   * @return \Symfony\Component\Routing\Route|null
-   *   The generated route, if available.
+   * {@inheritdoc}
    */
   protected function getSettingsFormRoute(EntityTypeInterface $entity_type) {
     if (!$entity_type->getBundleEntityType()) {
@@ -120,6 +105,7 @@ class BrightcoveVideoHtmlRouteProvider extends AdminHtmlRouteProvider {
 
       return $route;
     }
+    return NULL;
   }
 
 }

@@ -8,6 +8,8 @@ use Drupal\media_entity\MediaInterface;
 use Drupal\media_entity\MediaTypeBase;
 
 /**
+ * Defines video field type for media.
+ *
  * @MediaType(
  *   id = "media_entity_brightcove",
  *   label = @Translation("Brightcove Video"),
@@ -53,25 +55,28 @@ class BrightcoveVideo extends MediaTypeBase {
    * Returns the data stored on this video media as object.
    *
    * @return \Brightcove\Object\Video\Video|null
+   *   Brightcove video entity or null if not exist.
    *
    * @todo Decide whether we want to have our own custom domain value object.
    */
   public function getVideo(MediaInterface $media) {
     /** @var \Drupal\brightcove\Entity\BrightcoveVideo $video */
     if ($video = $media->{static::FIELD_NAME}->entity) {
-      $cms = BrightcoveUtil::getCMSAPI($video->getAPIClient());
+      $cms = BrightcoveUtil::getCmsApi($video->getApiClient());
       $brightcove_video = $cms->getVideo($video->getVideoId());
       return $brightcove_video;
     }
+    return NULL;
   }
 
   /**
    * Returns the brightcove video entity.
    *
    * @param \Drupal\media_entity\MediaInterface $media
-   *   The media
+   *   The media.
    *
    * @return \Drupal\brightcove\Entity\BrightcoveVideo
+   *   Brightcove video entity.
    */
   public function getVideoEntity(MediaInterface $media) {
     return $media->{static::FIELD_NAME}->entity;
@@ -98,7 +103,7 @@ class BrightcoveVideo extends MediaTypeBase {
         return $this->getVideoEntity($media)->getLongDescription();
 
       case 'reference_id':
-        return $this->getVideoEntity($media)->getReferenceID();
+        return $this->getVideoEntity($media)->getReferenceId();
 
       case 'state':
         break;
@@ -145,6 +150,7 @@ class BrightcoveVideo extends MediaTypeBase {
       case 'partner_channel':
         break;
     }
+    return NULL;
   }
 
   /**
@@ -180,7 +186,7 @@ class BrightcoveVideo extends MediaTypeBase {
   /**
    * {@inheritdoc}
    */
-  function createSourceFieldStorage() {
+  public function createSourceFieldStorage() {
     return $this->entityTypeManager
       ->getStorage('field_storage_config')
       ->create([
@@ -196,7 +202,7 @@ class BrightcoveVideo extends MediaTypeBase {
   /**
    * {@inheritdoc}
    */
-  function createSourceField(MediaBundleInterface $bundle) {
+  public function createSourceField(MediaBundleInterface $bundle) {
     return $this->entityTypeManager
       ->getStorage('field_config')
       ->create([

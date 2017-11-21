@@ -28,7 +28,8 @@ use Drupal\Core\Field\FieldStorageDefinitionInterface;
  *   }
  * )
  */
-class BrightcoveCustomField extends BrightcoveCMSEntity implements BrightcoveCustomFieldInterface {
+class BrightcoveCustomField extends BrightcoveCmsEntity implements BrightcoveCustomFieldInterface {
+
   /**
    * Field type string.
    */
@@ -63,7 +64,7 @@ class BrightcoveCustomField extends BrightcoveCMSEntity implements BrightcoveCus
   /**
    * {@inheritdoc}
    */
-  public function setEnumValues($enum_values) {
+  public function setEnumValues(array $enum_values) {
     return $this->set('enum_values', $enum_values);
   }
 
@@ -116,12 +117,10 @@ class BrightcoveCustomField extends BrightcoveCMSEntity implements BrightcoveCus
     $fields['name'] = BaseFieldDefinition::create('string')
       ->setLabel(t('Custom Field name'))
       ->setDescription(t('The name of the Brightcove Custom Field.'));
-      //->setRevisionable(TRUE)
 
     $fields['langcode'] = BaseFieldDefinition::create('language')
       ->setLabel(t('Language code'))
       ->setDescription(t('The language code for the Brightcove Custom Field.'));
-      //->setRevisionable(TRUE)
 
     $fields['api_client'] = BaseFieldDefinition::create('entity_reference')
       ->setLabel(t('API Client'))
@@ -132,7 +131,6 @@ class BrightcoveCustomField extends BrightcoveCMSEntity implements BrightcoveCus
     $fields['uid'] = BaseFieldDefinition::create('entity_reference')
       ->setLabel(t('Authored by'))
       ->setDescription(t('The username of the Brightcove Custom Field author.'))
-      //->setRevisionable(TRUE)
       ->setSetting('target_type', 'user')
       ->setDefaultValueCallback('Drupal\brightcove\Entity\BrightcoveCustomField::getCurrentUserId')
       ->setTranslatable(TRUE);
@@ -140,18 +138,15 @@ class BrightcoveCustomField extends BrightcoveCMSEntity implements BrightcoveCus
     $fields['created'] = BaseFieldDefinition::create('created')
       ->setLabel(t('Created'))
       ->setDescription(t('The time that the Brightcove Custom Field was created.'))
-      //->setRevisionable(TRUE)
       ->setTranslatable(TRUE);
 
     $fields['changed'] = BaseFieldDefinition::create('changed')
       ->setLabel(t('Changed'))
       ->setDescription(t('The time that the Brightcove Custom Field was last edited.'))
-      //->setRevisionable(TRUE)
       ->setTranslatable(TRUE);
 
     $fields['status'] = BaseFieldDefinition::create('boolean')
       ->setLabel(t('Status'))
-      //->setRevisionable(TRUE)
       ->setRequired(TRUE)
       ->setDefaultValue(TRUE)
       ->setSettings([
@@ -166,23 +161,19 @@ class BrightcoveCustomField extends BrightcoveCMSEntity implements BrightcoveCus
 
     $fields['description'] = BaseFieldDefinition::create('string')
       ->setLabel(t('Description'));
-     //->setRevisionable(TRUE)
 
     $fields['enum_values'] = BaseFieldDefinition::create('string')
       ->setLabel(t('Enum values'))
       ->setDescription(t('Max 150 enum value per custom field'))
       // We can't really say 150 here as it'd yield 150 textfields on the UI.
       ->setCardinality(FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED);
-      //->setRevisionable(TRUE)
 
     $fields['required'] = BaseFieldDefinition::create('boolean')
       ->setLabel(t('Required'))
-      //->setRevisionable(TRUE)
       ->setDefaultValue(FALSE);
 
     $fields['type'] = BaseFieldDefinition::create('string')
       ->setLabel(t('Type'));
-      //->setRevisionable(TRUE)
 
     return $fields;
   }
@@ -194,7 +185,7 @@ class BrightcoveCustomField extends BrightcoveCMSEntity implements BrightcoveCus
    *   Brightcove Custom Field object.
    * @param \Drupal\Core\Entity\EntityStorageInterface $storage
    *   Custom Field Entity storage.
-   * @param int|NULL $api_client_id
+   * @param int|null $api_client_id
    *   The ID of the BrightcoveAPIClient entity.
    *
    * @throws \Exception
@@ -256,4 +247,5 @@ class BrightcoveCustomField extends BrightcoveCMSEntity implements BrightcoveCus
 
     $custom_field_entity->save();
   }
+
 }

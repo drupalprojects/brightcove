@@ -6,14 +6,18 @@ use Drupal\Core\Controller\ControllerBase;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Class BrightcoveProxyTest
- *
  * Dummy page for proxy testing.
- *
- * @package Drupal\brightcove_proxy\Controller
  */
 class BrightcoveProxyTest extends ControllerBase {
+
+  /**
+   * Returns an empty response for testing the proxy.
+   *
+   * @return \Symfony\Component\HttpFoundation\Response
+   *   Empty response.
+   */
   public function testPage() {
     return new Response();
   }
+
 }

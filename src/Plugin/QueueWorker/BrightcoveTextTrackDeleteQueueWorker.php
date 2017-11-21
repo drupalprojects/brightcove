@@ -17,6 +17,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * )
  */
 class BrightcoveTextTrackDeleteQueueWorker extends QueueWorkerBase implements ContainerFactoryPluginInterface {
+
   /**
    * {@inheritdoc}
    */
@@ -38,4 +39,5 @@ class BrightcoveTextTrackDeleteQueueWorker extends QueueWorkerBase implements Co
       $text_track_entity->delete();
     }
   }
+
 }

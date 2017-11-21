@@ -8,6 +8,7 @@ namespace Drupal\brightcove;
  * @ingroup brightcove
  */
 interface BrightcovePlayerInterface {
+
   /**
    * Returns the Brightcove Player ID.
    *
@@ -30,7 +31,7 @@ interface BrightcovePlayerInterface {
   /**
    * Returns whether the player is adjusted for the playlist or not.
    *
-   * @return bool|NULL
+   * @return bool|null
    *   TRUE or FALSE whether the player is adjusted or not, or NULL if not set.
    */
   public function isAdjusted();
@@ -38,7 +39,7 @@ interface BrightcovePlayerInterface {
   /**
    * Sets the Player as adjusted.
    *
-   * @param bool|NULL adjusted
+   * @param bool|null $adjusted
    *   TRUE or FALSE whether the player is adjusted or not, or NULL to unset
    *   the value.
    *
@@ -84,4 +85,5 @@ interface BrightcovePlayerInterface {
    *   The called Brightcove Player.
    */
   public function setWidth($width);
+
 }

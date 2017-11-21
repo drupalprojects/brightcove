@@ -90,11 +90,11 @@ class BrightcoveSubscriptionController extends ControllerBase {
         $video_entity = BrightcoveVideo::loadByBrightcoveVideoId($content['account_id'], $content['video']);
 
         // Get CMS API.
-        $cms = BrightcoveUtil::getCMSAPI($video_entity->getAPIClient());
+        $cms = BrightcoveUtil::getCmsApi($video_entity->getApiClient());
 
         // Update video.
         $video = $cms->getVideo($video_entity->getVideoId());
-        BrightcoveVideo::createOrUpdate($video, $this->videoStorage, $video_entity->getAPIClient());
+        BrightcoveVideo::createOrUpdate($video, $this->videoStorage, $video_entity->getApiClient());
         break;
     }
 

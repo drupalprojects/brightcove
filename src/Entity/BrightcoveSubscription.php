@@ -234,7 +234,7 @@ class BrightcoveSubscription implements BrightcoveSubscriptionInterface {
       ->fetchAssoc();
 
     if (empty($result)) {
-      $result = array();
+      $result = [];
     }
     else {
       // Unserialize events.
@@ -480,7 +480,7 @@ class BrightcoveSubscription implements BrightcoveSubscriptionInterface {
   public function saveToBrightcove() {
     try {
       // Get CMS API.
-      $cms = BrightcoveUtil::getCMSAPI($this->apiClient->id());
+      $cms = BrightcoveUtil::getCmsApi($this->apiClient->id());
 
       if ($is_default = $this->isDefault()) {
         // Make sure that when the default is enabled, always use the correct
@@ -532,7 +532,7 @@ class BrightcoveSubscription implements BrightcoveSubscriptionInterface {
    */
   public function deleteFromBrightcove() {
     try {
-      $cms = BrightcoveUtil::getCMSAPI($this->apiClient->id());
+      $cms = BrightcoveUtil::getCmsApi($this->apiClient->id());
       $cms->deleteSubscription($this->getBcSid());
     }
     catch (\Exception $e) {
@@ -657,7 +657,7 @@ class BrightcoveSubscription implements BrightcoveSubscriptionInterface {
   public static function listFromBrightcove(BrightcoveAPIClientInterface $api_client) {
     $subscriptions = &drupal_static(__FUNCTION__);
     if (is_null($subscriptions)) {
-      $cms = BrightcoveUtil::getCMSAPI($api_client->id());
+      $cms = BrightcoveUtil::getCmsApi($api_client->id());
       $subscriptions = $cms->getSubscriptions();
     }
     return $subscriptions;

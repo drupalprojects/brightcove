@@ -18,12 +18,13 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * )
  */
 class BrightcovePlaylistPageQueueWorker extends QueueWorkerBase implements ContainerFactoryPluginInterface {
+
   /**
    * The playlist queue object.
    *
    * @var \Drupal\Core\Queue\QueueInterface
    */
-  protected $playlist_queue;
+  protected $playlistQueue;
 
   /**
    * Constructs a new BrightcovePlaylistPageQueueWorker object.
@@ -37,9 +38,9 @@ class BrightcovePlaylistPageQueueWorker extends QueueWorkerBase implements Conta
    * @param \Drupal\Core\Queue\QueueInterface $playlist_queue
    *   The queue object.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, QueueInterface $playlist_queue) {
+  public function __construct(array $configuration, $plugin_id, array $plugin_definition, QueueInterface $playlist_queue) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->playlist_queue = $playlist_queue;
+    $this->playlistQueue = $playlist_queue;
   }
 
   /**
@@ -58,15 +59,16 @@ class BrightcovePlaylistPageQueueWorker extends QueueWorkerBase implements Conta
    * {@inheritdoc}
    */
   public function processItem($data) {
-    $cms = BrightcoveUtil::getCMSAPI($data['api_client_id']);
+    $cms = BrightcoveUtil::getCmsApi($data['api_client_id']);
 
     // Get playlists.
     $playlists = $cms->listPlaylists(NULL, $data['items_per_page'], $data['page'] * $data['items_per_page']);
     foreach ($playlists as $playlist) {
-      $this->playlist_queue->createItem([
+      $this->playlistQueue->createItem([
         'api_client_id' => $data['api_client_id'],
         'playlist' => $playlist,
       ]);
     }
   }
+
 }

@@ -24,7 +24,7 @@ class BrightcoveVideoPageQueueWorker extends QueueWorkerBase implements Containe
    *
    * @var \Drupal\Core\Queue\QueueInterface
    */
-  protected $video_queue;
+  protected $videoQueue;
 
   /**
    * Constructs a new BrightcoveVideoPageQueueWorker object.
@@ -38,9 +38,9 @@ class BrightcoveVideoPageQueueWorker extends QueueWorkerBase implements Containe
    * @param \Drupal\Core\Queue\QueueInterface $video_queue
    *   The queue object.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, QueueInterface $video_queue) {
+  public function __construct(array $configuration, $plugin_id, array $plugin_definition, QueueInterface $video_queue) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->video_queue = $video_queue;
+    $this->videoQueue = $video_queue;
   }
 
   /**
@@ -59,15 +59,16 @@ class BrightcoveVideoPageQueueWorker extends QueueWorkerBase implements Containe
    * {@inheritdoc}
    */
   public function processItem($data) {
-    $cms = BrightcoveUtil::getCMSAPI($data['api_client_id']);
+    $cms = BrightcoveUtil::getCmsApi($data['api_client_id']);
 
     // Get videos.
     $videos = $cms->listVideos(NULL, 'created_at', $data['items_per_page'], $data['page'] * $data['items_per_page']);
     foreach ($videos as $video) {
-      $this->video_queue->createItem([
+      $this->videoQueue->createItem([
         'api_client_id' => $data['api_client_id'],
         'video' => $video,
       ]);
     }
   }
+
 }

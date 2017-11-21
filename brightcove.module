@@ -197,7 +197,7 @@ function brightcove_brightcove_video_view(array &$build, EntityInterface $entity
     // Only display the video player if we have all the info needed for it.
     if ($video_id = $video_entity->getVideoId()) {
       /** @var \Drupal\brightcove\Entity\BrightcoveApiClient $api_client */
-      $api_client = BrightcoveAPIClient::load($video_entity->getAPIClient());
+      $api_client = BrightcoveAPIClient::load($video_entity->getApiClient());
 
       /** @var \Drupal\brightcove\Entity\BrightcovePlayer $player */
       if ($player = $video_entity->getPlayer()) {
@@ -210,12 +210,11 @@ function brightcove_brightcove_video_view(array &$build, EntityInterface $entity
       $build['brightcove_video_player'] = [
         '#theme' => ['brightcove_video_player'],
         '#video_id' => $video_id,
-        '#account' => $api_client->getAccountID(),
+        '#account' => $api_client->getAccountId(),
         '#player' => BrightcoveUtil::getDefaultPlayer($video_entity),
         '#height' => !empty($player) ? $player->getHeight() : NULL,
         '#width' => !empty($player) ? $player->getWidth() : NULL,
-        '#data_usage' => 'cms:drupal:' . \DRUPAL::VERSION . ':' . 
-          system_get_info('module', 'brightcove')['version'] . ':javascript',
+        '#data_usage' => 'cms:drupal:' . \DRUPAL::VERSION . ':' . system_get_info('module', 'brightcove')['version'] . ':javascript',
       ];
     }
   }
@@ -224,7 +223,7 @@ function brightcove_brightcove_video_view(array &$build, EntityInterface $entity
     /** @var \Drupal\brightcove\Entity\BrightcoveVideo $video_entity */
     $video_entity = $entity;
 
-    $custom_fields = BrightcoveCustomField::loadMultipleByAPIClient($video_entity->getAPIClient());
+    $custom_fields = BrightcoveCustomField::loadMultipleByApiClient($video_entity->getApiClient());
 
     // Show custom fields in the extra field, if it exists and has a value.
     $custom_field_values = $video_entity->getCustomFieldValues();
@@ -255,7 +254,7 @@ function brightcove_brightcove_playlist_view(array &$build, EntityInterface $ent
     // Only display the video player if we have all the info needed for it.
     if ($playlist_id = $playlist_entity->getPlaylistId()) {
       /** @var \Drupal\brightcove\Entity\BrightcoveApiClient $api_client */
-      $api_client = BrightcoveUtil::getAPIClient($playlist_entity->getAPIClient());
+      $api_client = BrightcoveUtil::getApiClient($playlist_entity->getApiClient());
 
       /** @var \Drupal\brightcove\Entity\BrightcovePlayer $player */
       if ($player = $playlist_entity->getPlayer()) {
@@ -268,12 +267,11 @@ function brightcove_brightcove_playlist_view(array &$build, EntityInterface $ent
       $build['brightcove_playlist_video_player'] = [
         '#theme' => ['brightcove_playlist_video_player'],
         '#playlist_id' => $playlist_id,
-        '#account' => $api_client->getAccountID(),
+        '#account' => $api_client->getAccountId(),
         '#player' => BrightcoveUtil::getDefaultPlayer($playlist_entity),
         '#height' => !empty($player) ? $player->getHeight() : NULL,
         '#width' => !empty($player) ? $player->getWidth() : NULL,
-        '#data_usage' => 'cms:drupal:' . \DRUPAL::VERSION . ':' . 
-          system_get_info('module', 'brightcove')['version'] . ':javascript',
+        '#data_usage' => 'cms:drupal:' . \DRUPAL::VERSION . ':' . system_get_info('module', 'brightcove')['version'] . ':javascript',
       ];
     }
   }

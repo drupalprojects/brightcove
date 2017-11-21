@@ -175,7 +175,7 @@ class BrightcoveAPIClientForm extends EntityForm {
       '#title' => $this->t('Brightcove API Client ID'),
       '#description' => $this->t('The Client ID of the Brightcove API Authentication credentials, available <a href=":link" target="_blank">here</a>.', [':link' => 'https://studio.brightcove.com/products/videocloud/admin/oauthsettings']),
       '#maxlength' => 255,
-      '#default_value' => $brightcove_api_client->getClientID(),
+      '#default_value' => $brightcove_api_client->getClientId(),
       '#required' => TRUE,
     ];
 
@@ -193,7 +193,7 @@ class BrightcoveAPIClientForm extends EntityForm {
       '#title' => $this->t('Brightcove Account ID'),
       '#description' => $this->t('The number of one of the Brightcove accounts "selected for authorization" with the API Client above.'),
       '#maxlength' => 255,
-      '#default_value' => $brightcove_api_client->getAccountID(),
+      '#default_value' => $brightcove_api_client->getAccountId(),
       '#required' => TRUE,
     ];
 

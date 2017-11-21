@@ -38,9 +38,13 @@ class BrightcovePlaylistListBuilder extends EntityListBuilder {
    * Constructor.
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+   *   Entity type.
    * @param \Drupal\Core\Entity\EntityStorageInterface $storage
+   *   Entity Storage.
    * @param \Drupal\Core\Session\AccountProxy $account_proxy
+   *   Account proxy.
    * @param \Drupal\Core\Datetime\DateFormatter $date_formatter
+   *   Date formatter.
    */
   public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, AccountProxy $account_proxy, DateFormatter $date_formatter) {
     parent::__construct($entity_type, $storage);
@@ -116,7 +120,7 @@ class BrightcovePlaylistListBuilder extends EntityListBuilder {
     $row = [
       'name' => $name,
       'updated' => $this->dateFormatter->format($entity->getChangedTime(), 'short'),
-      'reference_id' => $entity->getReferenceID(),
+      'reference_id' => $entity->getReferenceId(),
     ];
 
     // Add operations column only if the user has access.

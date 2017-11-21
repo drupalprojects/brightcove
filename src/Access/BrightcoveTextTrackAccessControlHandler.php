@@ -13,6 +13,7 @@ use Drupal\Core\Access\AccessResult;
  * @see \Drupal\brightcove\Entity\BrightcoveTextTrack.
  */
 class BrightcoveTextTrackAccessControlHandler extends EntityAccessControlHandler {
+
   /**
    * {@inheritdoc}
    */
@@ -39,4 +40,5 @@ class BrightcoveTextTrackAccessControlHandler extends EntityAccessControlHandler
   protected function checkCreateAccess(AccountInterface $account, array $context, $entity_bundle = NULL) {
     return AccessResult::allowedIfHasPermission($account, 'add brightcove text track entities');
   }
+
 }

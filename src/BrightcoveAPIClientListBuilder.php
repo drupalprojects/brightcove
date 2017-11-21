@@ -49,9 +49,9 @@ class BrightcoveAPIClientListBuilder extends ConfigEntityListBuilder {
     $row['label'] = $entity->label();
     $row['id'] = $entity->id();
     if (self::$defaultAPIClient == $entity->id()) {
-      $row['id'] .= $this->t(' (default)');
+      $row['id'] .= '&nbsp;' . $this->t('(default)');
     }
-    $row['account_id'] = $entity->getAccountID();
+    $row['account_id'] = $entity->getAccountId();
     $row['default_player'] = BrightcovePlayer::getList($entity->id())[$entity->getDefaultPlayer()];
 
     // Try to authorize client to get client status.

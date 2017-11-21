@@ -9,10 +9,10 @@ use Symfony\Component\HttpKernel\Event\GetResponseEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
- * Class BrightcoveProxyInitSubscriber
- * @package Drupal\brightcove_proxy\EventSubscriber
+ * Subscribes to Drupal initialization event.
  */
 class BrightcoveProxyInitSubscriber implements EventSubscriberInterface {
+
   /**
    * Brightcove proxy configuration.
    *
@@ -34,6 +34,7 @@ class BrightcoveProxyInitSubscriber implements EventSubscriberInterface {
    * Initialize Brightcove client proxy.
    *
    * @param \Symfony\Component\HttpKernel\Event\GetResponseEvent $event
+   *   GET response event.
    */
   public function initializeBrightcoveClientProxy(GetResponseEvent $event) {
     // Initialize proxy config for Brightcove client if enabled.
@@ -54,4 +55,5 @@ class BrightcoveProxyInitSubscriber implements EventSubscriberInterface {
     $events[KernelEvents::REQUEST][] = ['initializeBrightcoveClientProxy'];
     return $events;
   }
+
 }

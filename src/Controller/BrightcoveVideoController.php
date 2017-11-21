@@ -16,7 +16,13 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * Class BrightcoveVideoController.
+ *
+ * @package Drupal\brightcove\Controller
+ */
 class BrightcoveVideoController extends ControllerBase {
+
   /**
    * Database connection.
    *
@@ -29,39 +35,39 @@ class BrightcoveVideoController extends ControllerBase {
    *
    * @var \Drupal\Core\Entity\EntityStorageInterface
    */
-  protected $video_storage;
+  protected $videoStorage;
 
   /**
    * The brightcove_text_track storage.
    *
    * @var \Drupal\Core\Entity\EntityStorageInterface
    */
-  protected $text_track_storage;
+  protected $textTrackStorage;
 
   /**
    * The video queue object.
    *
    * @var \Drupal\Core\Queue\QueueInterface
    */
-  protected $video_queue;
+  protected $videoQueue;
 
   /**
    * Controller constructor.
    *
+   * @param \Drupal\Core\Database\Connection $connection
+   *   Database connection.
    * @param \Drupal\Core\Entity\EntityStorageInterface $video_storage
    *   Brightcove Video entity storage.
    * @param \Drupal\Core\Entity\EntityStorageInterface $text_track_storage
    *   Brightcove Text Track entity storage.
-   * @param \Drupal\Core\Database\Connection $connection
-   *   Database connection.
    * @param \Drupal\Core\Queue\QueueInterface $video_queue
    *   The Video queue object.
    */
   public function __construct(Connection $connection, EntityStorageInterface $video_storage, EntityStorageInterface $text_track_storage, QueueInterface $video_queue) {
     $this->connection = $connection;
-    $this->video_storage = $video_storage;
-    $this->text_track_storage = $text_track_storage;
-    $this->video_queue = $video_queue;
+    $this->videoStorage = $video_storage;
+    $this->textTrackStorage = $text_track_storage;
+    $this->videoQueue = $video_queue;
   }
 
   /**
@@ -76,35 +82,41 @@ class BrightcoveVideoController extends ControllerBase {
     );
   }
 
-   /**
-    * Menu callback to update the existing Video with the latest version.
-    *
-    * @param int $entity_id
-    *   The ID of the video in Drupal.
-    *
-    * @return \Symfony\Component\HttpFoundation\RedirectResponse
-    *   Redirection response.
-    */
+  /**
+   * Menu callback to update the existing Video with the latest version.
+   *
+   * @param int $entity_id
+   *   The ID of the video in Drupal.
+   *
+   * @return \Symfony\Component\HttpFoundation\RedirectResponse
+   *   Redirection response.
+   */
   public function update($entity_id) {
     /** @var \Drupal\brightcove\Entity\BrightcoveVideo $video_entity */
     $video_entity = BrightcoveVideo::load($entity_id);
 
     /** @var \Brightcove\API\CMS $cms */
-    $cms = BrightcoveUtil::getCMSAPI($video_entity->getAPIClient());
+    $cms = BrightcoveUtil::getCmsApi($video_entity->getApiClient());
 
     // Update video.
     $video = $cms->getVideo($video_entity->getVideoId());
-    $this->video_queue->createItem([
-      'api_client_id' => $video_entity->getAPIClient(),
+    $this->videoQueue->createItem([
+      'api_client_id' => $video_entity->getApiClient(),
       'video' => $video,
     ]);
 
     // Run batch.
     batch_set([
       'operations' => [
-        [[BrightcoveUtil::class, 'runQueue'], ['brightcove_video_queue_worker']],
-        [[BrightcoveUtil::class, 'runQueue'], ['brightcove_text_track_queue_worker']],
-        [[BrightcoveUtil::class, 'runQueue'], ['brightcove_text_track_delete_queue_worker']],
+        [
+          [BrightcoveUtil::class, 'runQueue'], ['brightcove_video_queue_worker'],
+        ],
+        [
+          [BrightcoveUtil::class, 'runQueue'], ['brightcove_text_track_queue_worker'],
+        ],
+        [
+          [BrightcoveUtil::class, 'runQueue'], ['brightcove_text_track_delete_queue_worker'],
+        ],
       ],
     ]);
 
@@ -136,9 +148,9 @@ class BrightcoveVideoController extends ControllerBase {
 
         if (!is_null($video_entity)) {
           try {
-            // Basic semaphore to prevent race conditions, this is needed because
-            // Brightcove may call this callback again before the previous one
-            // would finish.
+            // Basic semaphore to prevent race conditions, this is needed
+            // because Brightcove may call this callback again before the
+            // previous one would finish.
             //
             // To make sure that the waiting doesn't run indefinitely limit the
             // maximum iterations to 600 cycles, which in worst case scenario
@@ -147,7 +159,8 @@ class BrightcoveVideoController extends ControllerBase {
             for ($i = 0; $i < $limit; $i++) {
               // Try to acquire semaphore.
               for (; $i < $limit && $this->state()->get('brightcove_video_semaphore', FALSE) == TRUE; $i++) {
-                // Wait random time between 100 and 500 milliseconds on each try.
+                // Wait random time between 100 and 500 milliseconds on each
+                // try.
                 usleep(mt_rand(100000, 500000));
               }
 
@@ -167,7 +180,7 @@ class BrightcoveVideoController extends ControllerBase {
               return new Response();
             }
 
-            $cms = BrightcoveUtil::getCMSAPI($video_entity->getAPIClient());
+            $cms = BrightcoveUtil::getCmsApi($video_entity->getApiClient());
 
             switch ($content['entityType']) {
               // Video.
@@ -195,7 +208,7 @@ class BrightcoveVideoController extends ControllerBase {
 
                         // Try to find the ingested text track on the video
                         // object and recreate it.
-                        $cms = BrightcoveUtil::getCMSAPI($video_entity->getAPIClient());;
+                        $cms = BrightcoveUtil::getCmsApi($video_entity->getApiClient());;
                         $video = $cms->getVideo($video_entity->getVideoId());
                         $api_text_tracks = $video->getTextTracks();
                         $found_api_text_track = NULL;
@@ -208,7 +221,7 @@ class BrightcoveVideoController extends ControllerBase {
 
                         // Create new text track.
                         if (!is_null($found_api_text_track)) {
-                          BrightcoveTextTrack::createOrUpdate($found_api_text_track,  $this->text_track_storage, $video_entity->id());
+                          BrightcoveTextTrack::createOrUpdate($found_api_text_track, $this->textTrackStorage, $video_entity->id());
                         }
 
                         // We need to process only one per request.
@@ -219,18 +232,18 @@ class BrightcoveVideoController extends ControllerBase {
                 }
                 // Try to figure out other assets.
                 else {
-                  $client = BrightcoveUtil::getClient($video_entity->getAPIClient());
-                  $api_client = BrightcoveUtil::getAPIClient($video_entity->getAPIClient());
+                  $client = BrightcoveUtil::getClient($video_entity->getApiClient());
+                  $api_client = BrightcoveUtil::getApiClient($video_entity->getApiClient());
 
-                  // Check for each asset type by try-and-error, currently there is
-                  // no other way to determine which asset is what...
+                  // Check for each asset type by try-and-error, currently there
+                  // is no other way to determine which asset is what...
                   $asset_types = [
                     BrightcoveVideo::IMAGE_TYPE_THUMBNAIL,
                     BrightcoveVideo::IMAGE_TYPE_POSTER,
                   ];
                   foreach ($asset_types as $type) {
                     try {
-                      $client->request('GET', 'cms', $api_client->getAccountID(), '/videos/' . $video_entity->getVideoId() . '/assets/' . $type . '/' . $content['entity'], NULL);
+                      $client->request('GET', 'cms', $api_client->getAccountId(), '/videos/' . $video_entity->getVideoId() . '/assets/' . $type . '/' . $content['entity'], NULL);
 
                       switch ($type) {
                         case BrightcoveVideo::IMAGE_TYPE_THUMBNAIL:
@@ -239,15 +252,15 @@ class BrightcoveVideoController extends ControllerBase {
                           $function = ucfirst($type);
 
                           // @TODO: Download the image only if truly different.
-                          // But this may not be possible without downloading the
-                          // image.
+                          // But this may not be possible without downloading
+                          // the image.
                           $video_entity->saveImage($type, $images->{"get{$function}"}());
                           break 2;
                       }
                     }
                     catch (APIException $e) {
-                      // Do nothing here, just catch the exception to not generate
-                      // an error.
+                      // Do nothing here, just catch the exception to not
+                      // generate an error.
                     }
                   }
                 }
@@ -288,4 +301,5 @@ class BrightcoveVideoController extends ControllerBase {
       $this->state()->set('brightcove_video_semaphore', FALSE);
     }
   }
+
 }

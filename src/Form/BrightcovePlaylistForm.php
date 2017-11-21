@@ -14,6 +14,7 @@ use Drupal\Core\Render\Element;
  * @ingroup brightcove
  */
 class BrightcovePlaylistForm extends BrightcoveVideoPlaylistForm {
+
   /**
    * {@inheritdoc}
    */
@@ -29,11 +30,11 @@ class BrightcovePlaylistForm extends BrightcoveVideoPlaylistForm {
         $api_client = $api_client_value[0]['target_id'];
       }
       else {
-        $api_client =  $api_client_value;
+        $api_client = $api_client_value;
       }
     }
     elseif (!empty($user_input = $form_state->getUserInput()) && isset($user_input['api_client'])) {
-      $api_client =  $user_input['api_client'];
+      $api_client = $user_input['api_client'];
     }
     else {
       $api_client = $form['api_client']['widget']['#default_value'];
@@ -96,7 +97,7 @@ class BrightcovePlaylistForm extends BrightcoveVideoPlaylistForm {
    * {@inheritdoc}
    */
   public function save(array $form, FormStateInterface $form_state) {
-    /** @var $entity \Drupal\brightcove\Entity\BrightcovePlaylist */
+    /* @var $entity \Drupal\brightcove\Entity\BrightcovePlaylist */
     $entity = $this->entity;
 
     try {
@@ -122,14 +123,9 @@ class BrightcovePlaylistForm extends BrightcoveVideoPlaylistForm {
   }
 
   /**
-   * Ajax callback to update the profile and player options list.
-   *
-   * @param $form
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *
-   * @return \Drupal\Core\Ajax\AjaxResponse
+   * {@inheritdoc}
    */
-  public static function apiClientUpdateForm($form, FormStateInterface $form_state) {
+  public static function apiClientUpdateForm(array $form, FormStateInterface $form_state) {
     $response = parent::apiClientUpdateForm($form, $form_state);
 
     // Remove videos from the field if the api client is changed.
@@ -147,4 +143,5 @@ class BrightcovePlaylistForm extends BrightcoveVideoPlaylistForm {
 
     return $response;
   }
+
 }

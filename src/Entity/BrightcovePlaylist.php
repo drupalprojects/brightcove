@@ -57,7 +57,7 @@ use Drupal\taxonomy\Entity\Term;
  *   field_ui_base_route = "brightcove_playlist.settings"
  * )
  */
-class BrightcovePlaylist extends BrightcoveVideoPlaylistCMSEntity implements BrightcovePlaylistInterface {
+class BrightcovePlaylist extends BrightcoveVideoPlaylistCmsEntity implements BrightcovePlaylistInterface {
   /**
    * Manual playlist type.
    */
@@ -81,9 +81,8 @@ class BrightcovePlaylist extends BrightcoveVideoPlaylistCMSEntity implements Bri
   /**
    * Get Playlist types.
    *
-   * @see http://docs.brightcove.com/en/video-cloud/cms-api/references/playlist-fields-reference.html
-   *
-   * @param int|NULL $type Get specific type of playlist types.
+   * @param int|null $type
+   *   Get specific type of playlist types.
    *   Possible values are TYPE_MANUAL, TYPE_SMART.
    *
    * @return array
@@ -91,6 +90,8 @@ class BrightcovePlaylist extends BrightcoveVideoPlaylistCMSEntity implements Bri
    *
    * @throws \Exception
    *   If an invalid type was given.
+   *
+   * @see http://docs.brightcove.com/en/video-cloud/cms-api/references/playlist-fields-reference.html
    */
   public static function getTypes($type = NULL) {
     $manual = [
@@ -212,7 +213,7 @@ class BrightcovePlaylist extends BrightcoveVideoPlaylistCMSEntity implements Bri
   /**
    * {@inheritdoc}
    */
-  public function setVideos($videos) {
+  public function setVideos(array $videos) {
     $this->set('videos', $videos);
     return $this;
   }
@@ -232,7 +233,7 @@ class BrightcovePlaylist extends BrightcoveVideoPlaylistCMSEntity implements Bri
     $saved = parent::save();
 
     if ($upload) {
-      $cms = BrightcoveUtil::getCMSAPI($this->getAPIClient());
+      $cms = BrightcoveUtil::getCmsApi($this->getApiClient());
 
       // Setup playlist object and set minimum required values.
       $playlist = new Playlist();
@@ -261,7 +262,7 @@ class BrightcovePlaylist extends BrightcoveVideoPlaylistCMSEntity implements Bri
 
       // Save or update reference ID if needed.
       if ($this->isFieldChanged('reference_id')) {
-        $playlist->setReferenceId($this->getReferenceID());
+        $playlist->setReferenceId($this->getReferenceId());
       }
 
       // Save or update search if needed.
@@ -348,7 +349,7 @@ class BrightcovePlaylist extends BrightcoveVideoPlaylistCMSEntity implements Bri
   public function delete($local_only = FALSE) {
     // Delete playlist from Brightcove.
     if (!$this->isNew() && !$local_only) {
-      $cms = BrightcoveUtil::getCMSAPI($this->getAPIClient());
+      $cms = BrightcoveUtil::getCmsApi($this->getApiClient());
       $cms->deletePlaylist($this->getPlaylistId());
     }
 
@@ -362,7 +363,7 @@ class BrightcovePlaylist extends BrightcoveVideoPlaylistCMSEntity implements Bri
     // Set weights based on the real order of the fields.
     $weight = -30;
 
-    /**
+    /*
      * Drupal-specific fields first.
      *
      * bcplid - Brightcove Playlist ID (Drupal-internal).
@@ -421,7 +422,6 @@ class BrightcovePlaylist extends BrightcoveVideoPlaylistCMSEntity implements Bri
 
     $fields['type'] = BaseFieldDefinition::create('list_string')
       ->setLabel(t('Playlist Type'))
-//      ->setRevisionable(TRUE)
       ->setRequired(TRUE)
       ->setDefaultValue('EXPLICIT')
       ->setSetting('allowed_values_function', [self::class, 'typeAllowedValues'])
@@ -440,7 +440,6 @@ class BrightcovePlaylist extends BrightcoveVideoPlaylistCMSEntity implements Bri
     $fields['name'] = BaseFieldDefinition::create('string')
       ->setLabel(t('Playlist name'))
       ->setDescription(t('Title of the playlist.'))
-//      ->setRevisionable(TRUE)
       ->setRequired(TRUE)
       ->setSettings([
         'max_length' => 250,
@@ -460,14 +459,13 @@ class BrightcovePlaylist extends BrightcoveVideoPlaylistCMSEntity implements Bri
     $fields['langcode'] = BaseFieldDefinition::create('language')
       ->setLabel(t('Language code'))
       ->setDescription(t('The language code for the Brightcove Video.'))
-//      ->setRevisionable(TRUE)
       ->setDisplayOptions('form', [
         'type' => 'language_select',
         'weight' => ++$weight,
       ])
       ->setDisplayConfigurable('form', TRUE);
 
-    /**
+    /*
      * Additional Brightcove fields, based on
      * @see http://docs.brightcove.com/en/video-cloud/cms-api/references/cms-api/versions/v1/index.html#api-playlistGroup-Get_Playlists
      *
@@ -484,7 +482,6 @@ class BrightcovePlaylist extends BrightcoveVideoPlaylistCMSEntity implements Bri
     $fields['favorite'] = BaseFieldDefinition::create('boolean')
       ->setLabel(t('Show Playlist in Sidebar'))
       ->setDescription(t('Whether playlist is in favorites list'))
-//      ->setRevisionable(TRUE)
       ->setDefaultValue(FALSE)
       ->setDisplayOptions('view', [
         'type' => 'string',
@@ -508,7 +505,6 @@ class BrightcovePlaylist extends BrightcoveVideoPlaylistCMSEntity implements Bri
       ->setLabel(t('Reference ID'))
       ->addConstraint('UniqueField')
       ->setDescription(t('Value specified must be unique'))
-//      ->setRevisionable(TRUE)
       ->setSettings([
         'max_length' => 150,
         'text_processing' => 0,
@@ -528,7 +524,6 @@ class BrightcovePlaylist extends BrightcoveVideoPlaylistCMSEntity implements Bri
 
     $fields['description'] = BaseFieldDefinition::create('string_long')
       ->setLabel(t('Short description'))
-//      ->setRevisionable(TRUE)
       ->setDisplayOptions('form', [
         'type' => 'string_textarea',
         'weight' => ++$weight,
@@ -549,7 +544,6 @@ class BrightcovePlaylist extends BrightcoveVideoPlaylistCMSEntity implements Bri
     $fields['tags_search_condition'] = BaseFieldDefinition::create('list_string')
       ->setLabel(t('Tags search condition'))
       ->setRequired(TRUE)
-      //->setRevisionable(TRUE)
       ->setDefaultValue(self::TAG_SEARCH_CONTAINS_ONE_OR_MORE)
       ->setSetting('allowed_values', [
         self::TAG_SEARCH_CONTAINS_ONE_OR_MORE => t('contains one or more'),
@@ -564,7 +558,6 @@ class BrightcovePlaylist extends BrightcoveVideoPlaylistCMSEntity implements Bri
     $fields['tags'] = BaseFieldDefinition::create('entity_reference')
       ->setLabel(t('Tags'))
       ->setCardinality(FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED)
-      //->setRevisionable(TRUE)
       ->setSettings([
         'target_type' => 'taxonomy_term',
         'handler_settings' => [
@@ -590,8 +583,6 @@ class BrightcovePlaylist extends BrightcoveVideoPlaylistCMSEntity implements Bri
     $fields['videos'] = BaseFieldDefinition::create('entity_reference')
       ->setLabel(t('Videos'))
       ->setDescription(t('Videos in the playlist.'))
-      //->setDefaultValue('')
-//      ->setRevisionable(TRUE)
       ->setCardinality(FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED)
       ->setSettings([
         'target_type' => 'brightcove_video',
@@ -619,7 +610,6 @@ class BrightcovePlaylist extends BrightcoveVideoPlaylistCMSEntity implements Bri
     $fields['uid'] = BaseFieldDefinition::create('entity_reference')
       ->setLabel(t('Authored by'))
       ->setDescription(t('The username of the Brightcove Playlist author.'))
-//      ->setRevisionable(TRUE)
       ->setSetting('target_type', 'user')
       ->setDefaultValueCallback('Drupal\brightcove\Entity\BrightcovePlaylist::getCurrentUserId')
       ->setTranslatable(TRUE)
@@ -644,13 +634,11 @@ class BrightcovePlaylist extends BrightcoveVideoPlaylistCMSEntity implements Bri
     $fields['status'] = BaseFieldDefinition::create('boolean')
       ->setLabel(t('Publishing status'))
       ->setDescription(t('A boolean indicating whether the Brightcove Playlist is published.'))
-//      ->setRevisionable(TRUE)
       ->setDefaultValue(TRUE);
 
     $fields['created'] = BaseFieldDefinition::create('created')
       ->setLabel(t('Created'))
       ->setDescription(t('The time that the Brightcove Playlist was created.'))
-//      ->setRevisionable(TRUE)
       ->setTranslatable(TRUE)
       ->setDisplayOptions('view', [
         'label' => 'inline',
@@ -662,7 +650,6 @@ class BrightcovePlaylist extends BrightcoveVideoPlaylistCMSEntity implements Bri
     $fields['changed'] = BaseFieldDefinition::create('changed')
       ->setLabel(t('Changed'))
       ->setDescription(t('The time that the Brightcove Playlist was last edited.'))
-//      ->setRevisionable(TRUE)
       ->setTranslatable(TRUE);
 
     return $fields;
@@ -719,7 +706,7 @@ class BrightcovePlaylist extends BrightcoveVideoPlaylistCMSEntity implements Bri
    *   Playlist EntityStorage.
    * @param \Drupal\Core\Entity\EntityStorageInterface $video_storage
    *   Video EntityStorage.
-   * @param int|NULL $api_client_id
+   * @param int|null $api_client_id
    *   The ID of the BrightcoveAPIClient entity.
    *
    * @throws \Exception
@@ -786,8 +773,8 @@ class BrightcovePlaylist extends BrightcoveVideoPlaylistCMSEntity implements Bri
       }
 
       // Update reference ID field if needed.
-      if ($playlist_entity->getReferenceID() != ($reference_id = $playlist->getReferenceId())) {
-        $playlist_entity->setReferenceID($reference_id);
+      if ($playlist_entity->getReferenceId() != ($reference_id = $playlist->getReferenceId())) {
+        $playlist_entity->setReferenceId($reference_id);
       }
 
       // Update description field if needed.
@@ -819,4 +806,5 @@ class BrightcovePlaylist extends BrightcoveVideoPlaylistCMSEntity implements Bri
       $playlist_entity->save();
     }
   }
+
 }
