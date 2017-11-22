@@ -10,6 +10,8 @@ use Drupal\brightcove\Entity\BrightcoveAPIClient;
 use Drupal\brightcove\Entity\BrightcovePlayer;
 use Drupal\brightcove\Entity\BrightcovePlaylist;
 use Drupal\brightcove\Entity\BrightcoveVideo;
+use Drupal\Component\Datetime\TimeInterface;
+use Drupal\Core\Database\Connection;
 use Drupal\Core\Queue\SuspendQueueException;
 use Drupal\Core\Url;
 use Drupal\taxonomy\Entity\Term;
@@ -216,6 +218,160 @@ class BrightcoveUtil {
       drupal_set_message(t('Brightcove API connection error: :error', [
         ':error' => self::getApiClient($entity->getApiClient())->getClientStatusMessage(),
       ]), 'error');
+    }
+  }
+
+  /**
+   * Runs specific status queues based on the given $type.
+   *
+   * @param string $type
+   *   The queue's type to run, it can be either sync, run or clear.
+   * @param \Drupal\Core\Database\Connection $connection
+   *   Database connection.
+   * @param \Drupal\Component\Datetime\TimeInterface $time
+   *   Time interface to get the system time.
+   */
+  public static function runStatusQueues($type, Connection $connection, TimeInterface $time) {
+    $batch_operations = [];
+    $util_class = static::class;
+    switch ($type) {
+      case 'sync':
+        $batch_operations[] = ['_brightcove_initiate_sync', []];
+        // There is intentionally no break here.
+      case 'run':
+        // These queues are responsible for synchronizing from Brightcove to
+        // Drupal (IOW pulling). The order is important.
+        // - The client queue must be run first, that's out of question: this
+        //   worker populates most of the other queues.
+        // - Players should be pulled before videos and playlists.
+        // - Custom fields (which means custom field definitions, not values)
+        //   should be pulled before videos.
+        // - Text tracks can only be pulled after videos.
+        // - Playlists can only be pulled after videos.
+        // - Custom fields (again: their definitions) have to be deleted
+        //   before pulling videos.
+        // - Text tracks have to be deleted before videos are pulled or
+        //   deleted.
+        $batch_operations[] = [
+          [$util_class, 'runQueue'], ['brightcove_client_queue_worker'],
+        ];
+        $batch_operations[] = [
+          [$util_class, 'runQueue'], ['brightcove_player_queue_worker'],
+        ];
+        $batch_operations[] = [
+          [$util_class, 'runQueue'], ['brightcove_player_delete_queue_worker'],
+        ];
+        $batch_operations[] = [
+          [$util_class, 'runQueue'], ['brightcove_custom_field_queue_worker'],
+        ];
+        $batch_operations[] = [
+          [$util_class, 'runQueue'], ['brightcove_custom_field_delete_queue_worker'],
+        ];
+        $batch_operations[] = [
+          [$util_class, 'runQueue'], ['brightcove_video_page_queue_worker'],
+        ];
+        $batch_operations[] = [
+          [$util_class, 'runQueue'], ['brightcove_video_queue_worker'],
+        ];
+        $batch_operations[] = [
+          [$util_class, 'runQueue'], ['brightcove_text_track_queue_worker'],
+        ];
+        $batch_operations[] = [
+          [$util_class, 'runQueue'], ['brightcove_text_track_delete_queue_worker'],
+        ];
+        $batch_operations[] = [
+          [$util_class, 'runQueue'], ['brightcove_playlist_page_queue_worker'],
+        ];
+        $batch_operations[] = [
+          [$util_class, 'runQueue'], ['brightcove_playlist_queue_worker'],
+        ];
+        $batch_operations[] = [
+          [$util_class, 'runQueue'], ['brightcove_video_delete_queue_worker'],
+        ];
+        $batch_operations[] = [
+          [$util_class, 'runQueue'], ['brightcove_playlist_delete_queue_worker'],
+        ];
+        $batch_operations[] = [
+          [$util_class, 'runQueue'], ['brightcove_subscriptions_queue_worker'],
+        ];
+        $batch_operations[] = [
+          [$util_class, 'runQueue'], ['brightcove_subscription_queue_worker'],
+        ];
+        $batch_operations[] = [
+          [$util_class, 'runQueue'], ['brightcove_subscription_delete_queue_worker'],
+        ];
+        break;
+
+      case 'clear':
+        // The order shouldn't really matter for clearing the queues, but we
+        // are repeating the order from above for the sake of consistency.
+        $batch_operations[] = [
+          [self::class, 'clearQueue'], ['brightcove_client_queue_worker'],
+        ];
+        $batch_operations[] = [
+          [self::class, 'clearQueue'], ['brightcove_player_queue_worker'],
+        ];
+        $batch_operations[] = [
+          [self::class, 'clearQueue'], ['brightcove_player_delete_queue_worker'],
+        ];
+        $batch_operations[] = [
+          [self::class, 'clearQueue'], ['brightcove_custom_field_queue_worker'],
+        ];
+        $batch_operations[] = [
+          [self::class, 'clearQueue'], ['brightcove_custom_field_delete_queue_worker'],
+        ];
+        $batch_operations[] = [
+          [self::class, 'clearQueue'], ['brightcove_video_page_queue_worker'],
+        ];
+        $batch_operations[] = [
+          [self::class, 'clearQueue'], ['brightcove_video_queue_worker'],
+        ];
+        $batch_operations[] = [
+          [self::class, 'clearQueue'], ['brightcove_text_track_queue_worker'],
+        ];
+        $batch_operations[] = [
+          [self::class, 'clearQueue'], ['brightcove_text_track_delete_queue_worker'],
+        ];
+        $batch_operations[] = [
+          [self::class, 'clearQueue'], ['brightcove_playlist_page_queue_worker'],
+        ];
+        $batch_operations[] = [
+          [self::class, 'clearQueue'], ['brightcove_playlist_queue_worker'],
+        ];
+        $batch_operations[] = [
+          [self::class, 'clearQueue'], ['brightcove_video_delete_queue_worker'],
+        ];
+        $batch_operations[] = [
+          [self::class, 'clearQueue'], ['brightcove_playlist_delete_queue_worker'],
+        ];
+        $batch_operations[] = [
+          [self::class, 'clearQueue'], ['brightcove_subscriptions_queue_worker'],
+        ];
+        $batch_operations[] = [
+          [self::class, 'clearQueue'], ['brightcove_subscription_queue_worker'],
+        ];
+        $batch_operations[] = [
+          [self::class, 'clearQueue'], ['brightcove_subscription_delete_queue_worker'],
+        ];
+        break;
+    }
+
+    if ($batch_operations) {
+      // Reset expired items in the default queue implementation table. If
+      // that's not used, this will simply be a no-op.
+      // @see system_cron()
+      $connection->update('queue')
+        ->fields([
+          'expire' => 0,
+        ])
+        ->condition('expire', 0, '<>')
+        ->condition('expire', $time->getRequestTime(), '<')
+        ->condition('name', 'brightcove_%', 'LIKE')
+        ->execute();
+
+      batch_set([
+        'operations' => $batch_operations,
+      ]);
     }
   }
 
