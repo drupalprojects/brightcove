@@ -224,10 +224,10 @@ class BrightcoveUtil {
    *
    * @param string $queue
    *   The queue name to clear.
-   * @param array &$context
+   * @param mixed &$context
    *   The Batch API context.
    */
-  public static function runQueue($queue, array &$context) {
+  public static function runQueue($queue, &$context) {
     // This is a static function called by Batch API, so it's not possible to
     // use dependency injection here.
     /* @var \Drupal\Core\Queue\QueueWorkerInterface $queue_worker */
