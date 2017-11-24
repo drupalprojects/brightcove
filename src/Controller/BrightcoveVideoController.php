@@ -17,9 +17,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Class BrightcoveVideoController.
- *
- * @package Drupal\brightcove\Controller
+ * Provides controller for video related callbacks.
  */
 class BrightcoveVideoController extends ControllerBase {
 
