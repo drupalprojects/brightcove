@@ -5,11 +5,10 @@ namespace Drupal\brightcove;
 use Drupal\Core\Entity\EntityStorageInterface;
 
 /**
- * Class EntityChangedFieldsTrait.
- *
- * @package Drupal\brightcove
+ * Provides a trait to identify changed entity fields.
  */
 trait EntityChangedFieldsTrait {
+
   /**
    * Changed fields.
    *
