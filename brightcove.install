@@ -241,7 +241,7 @@ function brightcove_update_8106() {
 }
 
 /**
- * Remove invalid poster, thumbnail image references from the Video entity.
+ * Remove invalid poster/thumbnail image references from BrightcoveVideo entity.
  */
 function brightcove_update_8107(&$sandbox) {
   // Condition videos which has at least either poster or thumbnail.
