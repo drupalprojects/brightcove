@@ -173,16 +173,4 @@ class StatusOverviewForm extends FormBase {
     }
   }
 
-  /**
-   * Clears a queue.
-   *
-   * @param string $queue
-   *   The queue name to clear.
-   */
-  public static function clearQueue($queue) {
-    // This is a static function called by Batch API, so it's not possible to
-    // use dependency injection here.
-    \Drupal::queue($queue)->deleteQueue();
-  }
-
 }
