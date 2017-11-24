@@ -18,9 +18,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Class BrightcoveSubscriptionController.
- *
- * @package Drupal\brightcove\Controller
+ * Provides controller for subscription related callbacks.
  */
 class BrightcoveSubscriptionController extends ControllerBase {
 
