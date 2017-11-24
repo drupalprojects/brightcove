@@ -7,9 +7,7 @@ use Drupal\Core\Entity\EntityChangedInterface;
 use Drupal\user\EntityOwnerInterface;
 
 /**
- * Interface BrightcoveCMSEntityInterface.
- *
- * @package Drupal\brightcove
+ * Provides common interface for CMS entities.
  */
 interface BrightcoveCMSEntityInterface extends ContentEntityInterface, EntityChangedInterface, EntityOwnerInterface {
 
