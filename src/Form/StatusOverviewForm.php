@@ -4,8 +4,6 @@ namespace Drupal\brightcove\Form;
 
 use Drupal\brightcove\BrightcoveUtil;
 use Drupal\brightcove\Entity\BrightcoveSubscription;
-use Drupal\Component\Datetime\TimeInterface;
-use Drupal\Core\Database\Connection;
 use Drupal\Core\Entity\EntityTypeManager;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
@@ -27,13 +25,6 @@ class StatusOverviewForm extends FormBase {
   protected $queueFactory;
 
   /**
-   * The database connection.
-   *
-   * @var \Drupal\Core\Database\Connection
-   */
-  protected $connection;
-
-  /**
    * The entity type manager.
    *
    * @var \Drupal\Core\Entity\EntityTypeManager
@@ -41,29 +32,16 @@ class StatusOverviewForm extends FormBase {
   protected $entityTypeManager;
 
   /**
-   * System time.
-   *
-   * @var \Drupal\Component\Datetime\TimeInterface
-   */
-  protected $time;
-
-  /**
    * Constructs a StatusOverviewForm object.
    *
    * @param \Drupal\Core\Queue\QueueFactory $queueFactory
    *   The queue factory.
-   * @param \Drupal\Core\Database\Connection $connection
-   *   Database connection.
    * @param \Drupal\Core\Entity\EntityTypeManager $entityTypeManager
    *   Entity type manager.
-   * @param \Drupal\Component\Datetime\TimeInterface $time
-   *   System time.
    */
-  public function __construct(QueueFactory $queueFactory, Connection $connection, EntityTypeManager $entityTypeManager, TimeInterface $time) {
+  public function __construct(QueueFactory $queueFactory, EntityTypeManager $entityTypeManager) {
     $this->queueFactory = $queueFactory;
-    $this->connection = $connection;
     $this->entityTypeManager = $entityTypeManager;
-    $this->time = $time;
   }
 
   /**
@@ -72,9 +50,7 @@ class StatusOverviewForm extends FormBase {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('queue'),
-      $container->get('database'),
-      $container->get('entity_type.manager'),
-      $container->get('datetime.time')
+      $container->get('entity_type.manager')
     );
   }
 
