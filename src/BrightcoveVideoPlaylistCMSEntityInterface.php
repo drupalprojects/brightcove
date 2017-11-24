@@ -3,9 +3,7 @@
 namespace Drupal\brightcove;
 
 /**
- * Interface BrightcoveVideoPlaylistCMSEntityInterface.
- *
- * @package Drupal\brightcove
+ * Provides a common interface for the Brightcove video and playlist entities.
  */
 interface BrightcoveVideoPlaylistCMSEntityInterface extends BrightcoveCMSEntityInterface {
 
