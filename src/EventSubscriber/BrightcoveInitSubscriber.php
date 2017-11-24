@@ -8,9 +8,7 @@ use Symfony\Component\HttpKernel\Event\GetResponseEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
- * Class BrightcoveInitSubscriber.
- *
- * @package Drupal\brightcove_proxy\EventSubscriber
+ * Subscribes to Drupal initialization event.
  */
 class BrightcoveInitSubscriber implements EventSubscriberInterface {
 
