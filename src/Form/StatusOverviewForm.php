@@ -169,7 +169,7 @@ class StatusOverviewForm extends FormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     if ($triggering_element = $form_state->getTriggeringElement()) {
-      BrightcoveUtil::runStatusQueues($triggering_element['#name'], $this->connection, $this->time);
+      BrightcoveUtil::runStatusQueues($triggering_element['#name'], $this->queueFactory);
     }
   }
 

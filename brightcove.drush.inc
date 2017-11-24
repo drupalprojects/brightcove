@@ -6,7 +6,6 @@
  */
 
 use Drupal\brightcove\BrightcoveUtil;
-use Drupal\Core\Database\Database;
 
 /**
  * Implements hook_drush_command().
@@ -32,7 +31,7 @@ function brightcove_drush_command() {
  */
 function drush_brightcove_sync_all() {
   drush_print('Initiating Brightcove-to-Drupal sync...');
-  BrightcoveUtil::runStatusQueues('sync', Database::getConnection(), \Drupal::time());
+  BrightcoveUtil::runStatusQueues('sync', \Drupal::service('queue'));
   drush_backend_batch_process();
   drush_print('Sync complete.');
 }
