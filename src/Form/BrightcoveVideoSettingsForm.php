@@ -6,7 +6,7 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 
 /**
- * Class BrightcoveVideoSettingsForm.
+ * Builds form for video settings.
  *
  * @ingroup brightcove
  */
