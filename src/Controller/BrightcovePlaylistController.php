@@ -9,9 +9,7 @@ use Drupal\Core\Entity\EntityStorageInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Class BrightcovePlaylistController.
- *
- * @package Drupal\brightcove\Controller
+ * Provides controller for playlist related callbacks.
  */
 class BrightcovePlaylistController extends ControllerBase {
 
