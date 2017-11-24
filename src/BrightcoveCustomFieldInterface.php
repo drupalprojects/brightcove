@@ -3,9 +3,7 @@
 namespace Drupal\brightcove;
 
 /**
- * Interface BrightcoveCustomFieldInterface.
- *
- * @package Drupal\brightcove
+ * Provides an interface defining a Brightcove custom field.
  */
 interface BrightcoveCustomFieldInterface {
 
