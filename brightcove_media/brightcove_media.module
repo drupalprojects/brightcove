@@ -288,7 +288,7 @@ function brightcove_media_file_formatter_image_view($file, $display, $langcode) 
       return NULL;
     }) ?: brightcove_get_default_image();
 
-    if (empty($display['settings']['image_style'])) {
+    if (!empty($display['settings']['image_style'])) {
       $element = [
         '#theme' => 'image',
         '#path' => $path,
