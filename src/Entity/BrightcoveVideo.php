@@ -581,8 +581,8 @@ class BrightcoveVideo extends BrightcoveVideoPlaylistCmsEntity implements Bright
    * @param string $brightcove_video_id
    *   The External ID of the Video.
    *
-   * @return \Drupal\Core\Entity\EntityInterface|static
-   *   The matching Brightcove Video.
+   * @return \Drupal\Core\Entity\EntityInterface|null
+   *   The matching Brightcove Video or NULL if the video cannot be found.
    */
   public static function loadByBrightcoveVideoId($account_id, $brightcove_video_id) {
     // Get API Client by Account ID.
@@ -596,7 +596,10 @@ class BrightcoveVideo extends BrightcoveVideoPlaylistCmsEntity implements Bright
       ->condition('status', 1)
       ->execute();
 
-    return self::load(reset($entity_ids));
+    if (!empty($entity_ids)) {
+      return self::load(reset($entity_ids));
+    }
+    return NULL;
   }
 
   /**
