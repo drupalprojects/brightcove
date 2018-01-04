@@ -253,6 +253,8 @@ class BrightcoveSubscription implements BrightcoveSubscriptionInterface {
    * @return \Drupal\brightcove\Entity\BrightcoveSubscription|null
    *   The default Brightcove Subscription for the given API client or NULL if
    *   not found.
+   *
+   * @throws \Drupal\brightcove\Entity\Exception\BrightcoveSubscriptionException
    */
   public static function loadDefault(BrightcoveAPIClient $api_client) {
     return self::loadByField('default', $api_client->id());
@@ -266,6 +268,8 @@ class BrightcoveSubscription implements BrightcoveSubscriptionInterface {
    *
    * @return \Drupal\brightcove\Entity\BrightcoveSubscription|null
    *   Loaded BrightcoveSubscription entity, or NULL if not found.
+   *
+   * @throws \Drupal\brightcove\Entity\Exception\BrightcoveSubscriptionException
    */
   public static function load($id) {
     return self::loadByField('id', $id);
@@ -344,6 +348,8 @@ class BrightcoveSubscription implements BrightcoveSubscriptionInterface {
    *
    * @return \Drupal\brightcove\Entity\BrightcoveSubscription|null
    *   Loaded BrightcoveSubscription entity, or NULL if not found.
+   *
+   * @throws \Drupal\brightcove\Entity\Exception\BrightcoveSubscriptionException
    */
   public static function loadByBcSid($bcsid) {
     return self::loadByField('bcsid', $bcsid);
@@ -357,6 +363,8 @@ class BrightcoveSubscription implements BrightcoveSubscriptionInterface {
    *
    * @return \Drupal\brightcove\Entity\BrightcoveSubscription|null
    *   The Subscription with the given endpoint or NULL if not found.
+   *
+   * @throws \Drupal\brightcove\Entity\Exception\BrightcoveSubscriptionException
    */
   public static function loadByEndpoint($endpoint) {
     return self::loadByField('endpoint', $endpoint);
@@ -529,6 +537,9 @@ class BrightcoveSubscription implements BrightcoveSubscriptionInterface {
 
   /**
    * Delete the Subscription from Brightcove only.
+   *
+   * @throws \Drupal\brightcove\Entity\Exception\BrightcoveSubscriptionException
+   * @throws \Exception
    */
   public function deleteFromBrightcove() {
     try {
@@ -566,6 +577,9 @@ class BrightcoveSubscription implements BrightcoveSubscriptionInterface {
    *   Subscription object from Brightcove.
    * @param \Drupal\brightcove\Entity\BrightcoveAPIClient|null $api_client
    *   Loaded API client entity, or null.
+   *
+   * @throws \Drupal\brightcove\Entity\Exception\BrightcoveSubscriptionException
+   * @throws \Exception
    */
   public static function createOrUpdate(Subscription $subscription, BrightcoveAPIClient $api_client = NULL) {
     /** @var \Drupal\brightcove\Entity\BrightcoveSubscription $brightcove_subscription */
