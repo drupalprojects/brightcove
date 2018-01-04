@@ -342,4 +342,24 @@ class BrightcoveAPIClient extends ConfigEntityBase implements BrightcoveAPIClien
     return $this;
   }
 
+  /**
+   * Loads API client by the Brightcove account ID.
+   *
+   * @param string $account_id
+   *   Brightcove account ID.
+   *
+   * @return \Drupal\brightcove\Entity\BrightcoveAPIClient|null
+   *   Loaded BrightcoveAPIClient entity or null if cannot be found.
+   */
+  public static function loadByAccountId($account_id) {
+    $api_client_ids = \Drupal::entityQuery('brightcove_api_client')
+      ->condition('account_id', $account_id)
+      ->execute();
+
+    if (!empty($api_client_ids)) {
+      return self::load(reset($api_client_ids));
+    }
+    return NULL;
+  }
+
 }
