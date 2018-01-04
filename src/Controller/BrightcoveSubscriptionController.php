@@ -2,6 +2,7 @@
 
 namespace Drupal\brightcove\Controller;
 
+use Brightcove\API\Exception\APIException;
 use Drupal\brightcove\BrightcoveUtil;
 use Drupal\brightcove\Entity\BrightcoveAPIClient;
 use Drupal\brightcove\Entity\BrightcoveSubscription;
@@ -13,6 +14,7 @@ use Drupal\Core\Database\Connection;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Url;
 use Drupal\Core\Utility\LinkGeneratorInterface;
+use Masterminds\HTML5\Exception;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -78,21 +80,30 @@ class BrightcoveSubscriptionController extends ControllerBase {
    *
    * @return \Symfony\Component\HttpFoundation\Response
    *   Redirection response.
+   *
+   * @throws \Exception
    */
   public function notificationCallback(Request $request) {
     $content = Json::decode($request->getContent());
 
     switch ($content['event']) {
       case 'video-change':
-        /** @var \Drupal\brightcove\Entity\BrightcoveVideo $video_entity */
-        $video_entity = BrightcoveVideo::loadByBrightcoveVideoId($content['account_id'], $content['video']);
+        // Try to update an existing video or create a new one if not exist.
+        try {
+          // Get CMS API.
+          $api_client = BrightcoveAPIClient::loadByAccountId($content['account_id']);
+          $cms = BrightcoveUtil::getCmsApi($api_client->id());
 
-        // Get CMS API.
-        $cms = BrightcoveUtil::getCmsApi($video_entity->getApiClient());
-
-        // Update video.
-        $video = $cms->getVideo($video_entity->getVideoId());
-        BrightcoveVideo::createOrUpdate($video, $this->videoStorage, $video_entity->getApiClient());
+          $video = $cms->getVideo($content['video']);
+          BrightcoveVideo::createOrUpdate($video, $this->videoStorage, $api_client->id());
+        }
+        catch (Exception $e) {
+          // Log exception except if it's an APIException and the response code
+          // was 404.
+          if (($e instanceof APIException && $e->getCode() != 404) || !($e instanceof APIException)) {
+            watchdog_exception('brightcove', $e);
+          }
+        }
         break;
     }
 
@@ -101,6 +112,8 @@ class BrightcoveSubscriptionController extends ControllerBase {
 
   /**
    * Lists available Brightcove Subscriptions.
+   *
+   * @throws \Drupal\brightcove\Entity\Exception\BrightcoveSubscriptionException
    */
   public function listSubscriptions() {
     // Set headers.
