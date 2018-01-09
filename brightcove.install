@@ -207,6 +207,22 @@ function brightcove_update_8104() {
  * Update entity definitions.
  */
 function brightcove_update_8105() {
+  // Migrate brightcove_video entity name field before updating the entity
+  // definitions.
+  $schema = Drupal::database()->schema();
+  /* @var \Drupal\Core\Entity\EntityDefinitionUpdateManagerInterface $entity_definition_update_manager */
+  $entity_definition_update_manager = Drupal::service('entity.definition_update_manager');
+  $entity_type_manager = Drupal::entityTypeManager();
+  $name_column_specifications = [
+    'type' => 'varchar',
+    'length' => 255,
+    'not null' => TRUE,
+  ];
+  $entity_type_definition = $entity_type_manager->getDefinition('brightcove_video');
+  $schema->changeField($entity_type_definition->getBaseTable(), 'name', 'name', $name_column_specifications);
+  $entity_definition_update_manager->installEntityType($entity_type_definition);
+
+  // Apply entity definition updates.
   \Drupal::entityDefinitionUpdateManager()->applyUpdates();
 }
 
@@ -218,22 +234,25 @@ function brightcove_update_8106() {
   $clients = BrightcoveAPIClient::loadMultiple();
   $messages = [];
   foreach ($clients as $client) {
-    // Create new default subscription if not exist yet.
-    $id = "default_{$client->id()}";
-    $subscription = BrightcoveSubscription::load($id);
+    // Create new default subscription if not exist yet, only with the old
+    // BrightcoveSubscription entity type.
+    if (get_parent_class(BrightcoveSubscription::class) == 'ConfigEntityBase') {
+      $id = "default_{$client->id()}";
+      $subscription = BrightcoveSubscription::load($id);
 
-    if (empty($subscription)) {
-      BrightcoveSubscription::create([
-        'id' => $id,
-        'status' => FALSE,
-        'default' => TRUE,
-        'api_client_id' => $client->id(),
-        'endpoint' => BrightcoveUtil::getDefaultSubscriptionUrl(),
-        'events' => ['video-change'],
-      ])->save(FALSE);
-    }
-    else {
-      $messages[] = t('Default subscription for "@client" client already exist, skipping...', ['@client' => $client->label()]) . PHP_EOL;
+      if (empty($subscription)) {
+        BrightcoveSubscription::create([
+          'id' => $id,
+          'status' => FALSE,
+          'default' => TRUE,
+          'api_client_id' => $client->id(),
+          'endpoint' => BrightcoveUtil::getDefaultSubscriptionUrl(),
+          'events' => ['video-change'],
+        ])->save(FALSE);
+      }
+      else {
+        $messages[] = t('Default subscription for "@client" client already exist, skipping...', ['@client' => $client->label()]) . PHP_EOL;
+      }
     }
   }
 
@@ -398,31 +417,51 @@ function brightcove_update_8109(&$sandbox) {
   /** @var \Drupal\Core\Database\Connection $connection */
   $connection = $container->get('database');
 
-  // Get existing brightcove subsctiption entities. At this point the config
+  // Get existing brightcove subscription entities. At this point the config
   // entity does not exist, so it must be acquired through the database.
   $results = $connection->select('config', 'c')
     ->fields('c')
     ->condition('name', 'brightcove.brightcove_subscription.%', 'LIKE')
-    ->execute();
+    ->execute()
+    ->fetchAll();
 
-  // Create new subscription entities.
-  foreach ($results as $result) {
-    // Get data and map to the new fields.
-    $data = unserialize($result->data);
-    $data['bcsid'] = $data['id'];
-    unset($data['id']);
-    $data['is_default'] = $data['default'];
-    unset($data['default']);
+  // Migrate subscription entities.
+  if (!empty($results)) {
+    foreach ($results as $result) {
+      // Get data and map to the new fields.
+      $data = unserialize($result->data);
+      $data['bcsid'] = $data['id'];
+      unset($data['id']);
+      $data['is_default'] = $data['default'];
+      unset($data['default']);
 
-    // Save new subscription entity.
-    $brightcove_subscription = BrightcoveSubscription::createFromArray($data);
-    $brightcove_subscription->save();
+      // Save new subscription entity.
+      $brightcove_subscription = BrightcoveSubscription::createFromArray($data);
+      $brightcove_subscription->save();
+    }
+
+    // Remove old subscription config entities.
+    $connection->delete('config')
+      ->condition('name', 'brightcove.brightcove\_subscription.%', 'LIKE')
+      ->execute();
   }
+  // If there are no subscriptions available from the old entities, let's create
+  // the new default ones for the API clients.
+  else {
+    $clients = BrightcoveAPIClient::loadMultiple();
+    foreach ($clients as $client) {
+      $default = BrightcoveSubscription::loadDefault($client);
 
-  // Remove old subscription config entities.
-  $connection->delete('config')
-    ->condition('name', 'brightcove.brightcove\_subscription.%', 'LIKE')
-    ->execute();
+      if (empty($default)) {
+        $subscription = new BrightcoveSubscription(TRUE);
+        $subscription->setStatus(FALSE)
+          ->setApiClient($client)
+          ->setEndpoint(BrightcoveUtil::getDefaultSubscriptionUrl())
+          ->setEvents(['video-change'])
+          ->save(FALSE);
+      }
+    }
+  }
 
   // Clear cached definitions.
   /** @var \Drupal\Core\Config\TypedConfigManager $typed_config_manager */
