@@ -911,7 +911,7 @@ class BrightcoveVideo extends BrightcoveVideoPlaylistCmsEntity implements Bright
 
       // Delete video references.
       try {
-        $client->request('DELETE', 'cms', $api_client->getAccountId(), "/videos/{$this->getVideoId()}/references", NULL);
+        $client->request('DELETE', 1, 'cms', $api_client->getAccountId(), "/videos/{$this->getVideoId()}/references", NULL);
 
         // Delete video.
         $cms = BrightcoveUtil::getCmsApi($this->getApiClient());
@@ -1672,7 +1672,7 @@ class BrightcoveVideo extends BrightcoveVideoPlaylistCmsEntity implements Bright
         try {
           if (!is_null($api_client_entity)) {
             $client = $api_client_entity->getClient();
-            $json = $client->request('GET', 'ingestion', $api_client_entity->getAccountId(), '/profiles', NULL);
+            $json = $client->request('GET', 1, 'ingestion', $api_client_entity->getAccountId(), '/profiles', NULL);
 
             foreach ($json as $profile) {
               $profiles[$profile['id']] = $profile['name'];

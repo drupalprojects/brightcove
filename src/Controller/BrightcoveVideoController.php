@@ -241,7 +241,7 @@ class BrightcoveVideoController extends ControllerBase {
                   ];
                   foreach ($asset_types as $type) {
                     try {
-                      $client->request('GET', 'cms', $api_client->getAccountId(), '/videos/' . $video_entity->getVideoId() . '/assets/' . $type . '/' . $content['entity'], NULL);
+                      $client->request('GET', 1, 'cms', $api_client->getAccountId(), '/videos/' . $video_entity->getVideoId() . '/assets/' . $type . '/' . $content['entity'], NULL);
 
                       switch ($type) {
                         case BrightcoveVideo::IMAGE_TYPE_THUMBNAIL:
