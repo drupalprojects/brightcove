@@ -21,6 +21,6 @@
     "source": "http://cgit.drupalcode.org/brightcove"
   },
   "require": {
-    "brightcove/api": "dev-master"
+    "brightcove/api": "~1.1"
   }
 }
