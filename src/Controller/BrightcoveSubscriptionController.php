@@ -14,7 +14,6 @@ use Drupal\Core\Database\Connection;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Url;
 use Drupal\Core\Utility\LinkGeneratorInterface;
-use Masterminds\HTML5\Exception;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -97,7 +96,7 @@ class BrightcoveSubscriptionController extends ControllerBase {
           $video = $cms->getVideo($content['video']);
           BrightcoveVideo::createOrUpdate($video, $this->videoStorage, $api_client->id());
         }
-        catch (Exception $e) {
+        catch (\Exception $e) {
           // Log exception except if it's an APIException and the response code
           // was 404.
           if (($e instanceof APIException && $e->getCode() != 404) || !($e instanceof APIException)) {
