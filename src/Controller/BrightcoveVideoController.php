@@ -145,39 +145,7 @@ class BrightcoveVideoController extends ControllerBase {
         $video_entity = BrightcoveVideo::load($video_id);
 
         if (!is_null($video_entity)) {
-          try {
-            // Basic semaphore to prevent race conditions, this is needed
-            // because Brightcove may call this callback again before the
-            // previous one would finish.
-            //
-            // To make sure that the waiting doesn't run indefinitely limit the
-            // maximum iterations to 600 cycles, which in worst case scenario
-            // it means 5 minutes maximum wait time.
-            $limit = 600;
-            for ($i = 0; $i < $limit; $i++) {
-              // Try to acquire semaphore.
-              for (; $i < $limit && $this->state()->get('brightcove_video_semaphore', FALSE) == TRUE; $i++) {
-                // Wait random time between 100 and 500 milliseconds on each
-                // try.
-                usleep(mt_rand(100000, 500000));
-              }
-
-              // Make sure that other processes have not acquired the semaphore
-              // while we waited.
-              if ($this->state()->get('brightcove_video_semaphore', FALSE) == FALSE) {
-                // Acquire semaphore as soon as we can.
-                $this->state()->set('brightcove_video_semaphore', TRUE);
-                break;
-              }
-            }
-
-            // If we couldn't acquire the semaphore in the given time, release
-            // the semaphore (finally block will do this), and return with an
-            // empty response.
-            if (600 <= $i) {
-              return new Response();
-            }
-
+          BrightcoveUtil::runWithSemaphore(function () use ($video_entity, $content) {
             $cms = BrightcoveUtil::getCmsApi($video_entity->getApiClient());
 
             switch ($content['entityType']) {
@@ -268,21 +236,14 @@ class BrightcoveVideoController extends ControllerBase {
 
               // Don't do anything if we got something else.
               default:
-                return new Response();
+                return NULL;
             }
 
             // Update video entity with the latest update date.
             $video = $cms->getVideo($video_entity->getVideoId());
             $video_entity->setChangedTime(strtotime($video->getUpdatedAt()));
             $video_entity->save();
-          }
-          catch (\Exception $e) {
-            watchdog_exception('brightcove', $e, 'An error happened while processing the ingestion callback.');
-          }
-          finally {
-            // Release semaphore.
-            $this->state()->set('brightcove_video_semaphore', FALSE);
-          }
+          });
         }
       }
     }

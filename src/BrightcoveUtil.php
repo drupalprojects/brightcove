@@ -467,4 +467,65 @@ class BrightcoveUtil {
     return Url::fromRoute('brightcove_notification_callback', [], ['absolute' => TRUE])->toString();
   }
 
+  /**
+   * Run a piece of code with semaphore check.
+   *
+   * @param callable $function
+   *   Function that needs to be run in sync.
+   *
+   * @return bool|mixed
+   *   FALSE if the execution was failed, otherwise it will return what the
+   *   callable function returned.
+   */
+  public static function runWithSemaphore(callable $function) {
+    /* @var \Drupal\Core\KeyValueStore\KeyValueStoreInterface $state */
+    $state = \Drupal::getContainer()->get('state');
+
+    try {
+      // Basic semaphore to prevent race conditions, this is needed
+      // because Brightcove may call callbacks again before the previous one
+      // would finish.
+      //
+      // To make sure that the waiting doesn't run indefinitely limit the
+      // maximum iterations to 600 cycles, which in worst case scenario would
+      // mean 5 minutes maximum wait time.
+      $limit = 600;
+      for ($i = 0; $i < $limit; $i++) {
+        // Try to acquire semaphore.
+        for (; $i < $limit && $state->get('brightcove_video_semaphore', FALSE) == TRUE; $i++) {
+          // Wait random time between 100 and 500 milliseconds on each
+          // try.
+          usleep(mt_rand(100000, 500000));
+        }
+
+        // Make sure that other processes have not acquired the semaphore
+        // while we waited.
+        if ($state->get('brightcove_semaphore', FALSE) == FALSE) {
+          // Acquire semaphore as soon as we can.
+          $state->set('brightcove_semaphore', TRUE);
+          break;
+        }
+      }
+
+      // If we couldn't acquire the semaphore in the given time, release the
+      // semaphore (finally block will do this), and return with FALSE.
+      if (600 <= $i) {
+        return FALSE;
+      }
+
+      // Run function.
+      return $function();
+    }
+    catch (\Exception $e) {
+      // Log error, and return with FALSE.
+      watchdog_exception('brightcove', $e, $e->getMessage());
+      return FALSE;
+    }
+    finally {
+      // Release semaphore.
+      // This will always run regardless what happened.
+      $state->set('brightcove_semaphore', FALSE);
+    }
+  }
+
 }
