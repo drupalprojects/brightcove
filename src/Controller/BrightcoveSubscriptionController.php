@@ -83,28 +83,30 @@ class BrightcoveSubscriptionController extends ControllerBase {
    * @throws \Exception
    */
   public function notificationCallback(Request $request) {
-    $content = Json::decode($request->getContent());
+    BrightcoveUtil::runWithSemaphore(function () use ($request) {
+      $content = Json::decode($request->getContent());
 
-    switch ($content['event']) {
-      case 'video-change':
-        // Try to update an existing video or create a new one if not exist.
-        try {
-          // Get CMS API.
-          $api_client = BrightcoveAPIClient::loadByAccountId($content['account_id']);
-          $cms = BrightcoveUtil::getCmsApi($api_client->id());
+      switch ($content['event']) {
+        case 'video-change':
+          // Try to update an existing video or create a new one if not exist.
+          try {
+            // Get CMS API.
+            $api_client = BrightcoveAPIClient::loadByAccountId($content['account_id']);
+            $cms = BrightcoveUtil::getCmsApi($api_client->id());
 
-          $video = $cms->getVideo($content['video']);
-          BrightcoveVideo::createOrUpdate($video, $this->videoStorage, $api_client->id());
-        }
-        catch (\Exception $e) {
-          // Log exception except if it's an APIException and the response code
-          // was 404.
-          if (($e instanceof APIException && $e->getCode() != 404) || !($e instanceof APIException)) {
-            watchdog_exception('brightcove', $e);
+            $video = $cms->getVideo($content['video']);
+            BrightcoveVideo::createOrUpdate($video, $this->videoStorage, $api_client->id());
           }
-        }
-        break;
-    }
+          catch (\Exception $e) {
+            // Log exception except if it's an APIException and the response
+            // code was 404.
+            if (($e instanceof APIException && $e->getCode() != 404) || !($e instanceof APIException)) {
+              watchdog_exception('brightcove', $e);
+            }
+          }
+          break;
+      }
+    });
 
     return new Response();
   }
