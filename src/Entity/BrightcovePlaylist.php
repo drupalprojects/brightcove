@@ -148,6 +148,9 @@ class BrightcovePlaylist extends BrightcoveVideoPlaylistCmsEntity implements Bri
    *   is NULL, you should return the list of all the possible allowed values
    *   in any context so that other code (e.g. Views filters) can support the
    *   allowed values for all possible entities and bundles.
+   *
+   * @throws \Exception
+   *   If an invalid type was given.
    */
   public static function typeAllowedValues(FieldStorageDefinitionInterface $definition, FieldableEntityInterface $entity = NULL, &$cacheable = TRUE) {
     return self::getTypes();
