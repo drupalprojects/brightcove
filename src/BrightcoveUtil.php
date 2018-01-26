@@ -492,7 +492,7 @@ class BrightcoveUtil {
       $limit = 600;
       for ($i = 0; $i < $limit; $i++) {
         // Try to acquire semaphore.
-        for (; $i < $limit && $state->get('brightcove_video_semaphore', FALSE) == TRUE; $i++) {
+        for (; $i < $limit && $state->get('brightcove_semaphore', FALSE) == TRUE; $i++) {
           // Wait random time between 100 and 500 milliseconds on each
           // try.
           usleep(mt_rand(100000, 500000));
