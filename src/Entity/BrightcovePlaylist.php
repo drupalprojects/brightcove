@@ -54,7 +54,10 @@ use Drupal\taxonomy\Entity\Term;
  *     "delete-form" = "/brightcove_playlist/{brightcove_playlist}/delete",
  *     "collection" = "/admin/content/brightcove_playlist",
  *   },
- *   field_ui_base_route = "brightcove_playlist.settings"
+ *   field_ui_base_route = "brightcove_playlist.settings",
+ *   constraints = {
+ *     "brightcove_video_by_api_client_constraint" = {}
+ *   }
  * )
  */
 class BrightcovePlaylist extends BrightcoveVideoPlaylistCmsEntity implements BrightcovePlaylistInterface {
