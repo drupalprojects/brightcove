@@ -92,10 +92,11 @@ class BrightcoveSubscriptionController extends ControllerBase {
           try {
             // Get CMS API.
             $api_client = BrightcoveAPIClient::loadByAccountId($content['account_id']);
-            $cms = BrightcoveUtil::getCmsApi($api_client->id());
-
-            $video = $cms->getVideo($content['video']);
-            BrightcoveVideo::createOrUpdate($video, $this->videoStorage, $api_client->id());
+            if (!empty($api_client)) {
+              $cms = BrightcoveUtil::getCmsApi($api_client->id());
+              $video = $cms->getVideo($content['video']);
+              BrightcoveVideo::createOrUpdate($video, $this->videoStorage, $api_client->id());
+            }
           }
           catch (\Exception $e) {
             // Log exception except if it's an APIException and the response
