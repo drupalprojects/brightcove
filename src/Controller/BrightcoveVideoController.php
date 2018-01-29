@@ -134,18 +134,18 @@ class BrightcoveVideoController extends ControllerBase {
    *   An empty Response object.
    */
   public function ingestionCallback(Request $request, $token) {
-    $content = Json::decode($request->getContent());
+    BrightcoveUtil::runWithSemaphore(function () use ($request, $token) {
+      $content = Json::decode($request->getContent());
 
-    if (is_array($content) && $content['status'] == 'SUCCESS' && $content['version'] == 1 && $content['action'] == 'CREATE') {
-      $video_id = \Drupal::keyValueExpirable('brightcove_callback')
-        ->get($token);
+      if (is_array($content) && $content['status'] == 'SUCCESS' && $content['version'] == 1 && $content['action'] == 'CREATE') {
+        $video_id = \Drupal::keyValueExpirable('brightcove_callback')
+          ->get($token);
 
-      if (!empty($video_id)) {
-        /** @var \Drupal\brightcove\Entity\BrightcoveVideo $video_entity */
-        $video_entity = BrightcoveVideo::load($video_id);
+        if (!empty($video_id)) {
+          /** @var \Drupal\brightcove\Entity\BrightcoveVideo $video_entity */
+          $video_entity = BrightcoveVideo::load($video_id);
 
-        if (!is_null($video_entity)) {
-          BrightcoveUtil::runWithSemaphore(function () use ($video_entity, $content) {
+          if (!is_null($video_entity)) {
             $cms = BrightcoveUtil::getCmsApi($video_entity->getApiClient());
 
             switch ($content['entityType']) {
@@ -243,10 +243,10 @@ class BrightcoveVideoController extends ControllerBase {
             $video = $cms->getVideo($video_entity->getVideoId());
             $video_entity->setChangedTime(strtotime($video->getUpdatedAt()));
             $video_entity->save();
-          });
+          }
         }
       }
-    }
+    });
 
     return new Response();
   }
