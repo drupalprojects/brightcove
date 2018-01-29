@@ -857,6 +857,17 @@ class BrightcoveVideo extends BrightcoveVideoPlaylistCmsEntity implements Bright
         $ingest_request->setTextTracks($ingest_text_tracks);
       }
 
+      // Update changed time and video entity with the video ID.
+      if (isset($saved_video)) {
+        $this->setChangedTime(strtotime($saved_video->getUpdatedAt()));
+
+        // Save the entity again to save some new values which are only
+        // available after creating/updating the video on Brightcove.
+        // Also don't change the save state to show the correct message when if
+        // the entity is created or updated.
+        parent::save();
+      }
+
       // Send the ingest request if there was an ingestible asset.
       if (!is_null($this->ingestRequest)) {
         // Get token.
@@ -876,17 +887,6 @@ class BrightcoveVideo extends BrightcoveVideoPlaylistCmsEntity implements Bright
         // Send request.
         $di = BrightcoveUtil::getDiApi($this->getApiClient());
         $di->createIngest($this->getVideoId(), $this->ingestRequest);
-      }
-
-      // Update changed time and video entity with the video ID.
-      if (isset($saved_video)) {
-        $this->setChangedTime(strtotime($saved_video->getUpdatedAt()));
-
-        // Save the entity again to save some new values which are only
-        // available after creating/updating the video on Brightcove.
-        // Also don't change the save state to show the correct message when if
-        // the entity is created or updated.
-        parent::save();
       }
     }
 
